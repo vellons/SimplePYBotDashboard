@@ -19,8 +19,11 @@
 </template>
 
 <script>
+import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
+
 export default {
   name: "ServoMotor",
+  mixins: [simplePYBotSDK],
   props: {
     config: {
       type: Object,
@@ -29,8 +32,11 @@ export default {
     motorKey: {
       required: true
     },
-    socketValue: {
-      required: true
+    socketGoalValue: {
+      default: 0
+    },
+    socketCurrentValue: {
+      default: 0
     },
   },
   data: () => ({
@@ -40,11 +46,24 @@ export default {
   methods: {
     rangeGoalChanged: function () {
       console.log(this.motorKey, this.rangeGoalAngle)
+      let data = {
+        "goal_angle": this.rangeGoalAngle
+      }
+      this.axios.patch(this.getWebServerUrl() + "/motors/" + this.motorKey + "/", data).then((response) => {
+        if (response.status !== 200) {
+          this.$toast.error("Failed to move " + this.motorKey + " to " + this.rangeGoalAngle + ". Bad response")
+        }
+      }).catch(() => {
+        this.$toast.error("Failed to move " + this.motorKey + " to " + this.rangeGoalAngle)
+      })
     }
   },
   watch: {
-    socketValue: function () {
-      this.rangeCurrentAngle = this.socketValue
+    socketGoalValue: function () {
+      this.rangeGoalAngle = this.socketGoalValue
+    },
+    socketCurrentValue: function () {
+      this.rangeCurrentAngle = this.socketCurrentValue
     }
   }
 }
@@ -56,9 +75,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: calc(100% - 25px);
-  margin: 5px;
-  padding: 5px;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
   border: 1px solid orange;
 }
 

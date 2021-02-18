@@ -1,18 +1,20 @@
 <template>
-  <div class="motor-group-container">
-    <ServoMotor class="servomotor" v-for="(motor, key) in config" :key="key"
-                :config="motor" :motorKey="key" :socketValue="socketValue"/>
-    <div>
-      <input type="range" :min="-10" v-model="socketValue" :max="90" :step="1"/>
-    </div>
+  <div class="servomotor-group-container">
+    <ServoMotor
+        class="servomotor" v-for="(motor, key) in config" :key="key"
+        :config="motor" :motorKey="key"
+        :socketGoalValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).goal_angle : 0"
+        :socketCurrentValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).current_angle : 0"/>
   </div>
 </template>
 
 <script>
-import ServoMotor from '@/components/global/ServoMotor.vue'
+import ServoMotor from "@/components/global/ServoMotor.vue"
+import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 
 export default {
-  name: 'ServomotorsGroup',
+  name: "ServomotorsGroup",
+  mixins: [simplePYBotSDK],
   components: {
     ServoMotor
   },
@@ -20,21 +22,26 @@ export default {
     config: {
       type: Object,
       required: true
+    },
+    motorStatus: {
+      type: Array,
+      required: true
     }
-  },
-  data: () => ({
-    socketValue: 0,
-  }),
+  }
 }
 </script>
 
 <style scoped>
-.motor-group-container {
+.servomotor-group-container {
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
 }
 
 .servomotor {
-  width: 33%;
+  flex: 0 50%;
+}
+
+.servomotor:nth-of-type(1) {
+  flex: 0 100%;
 }
 </style>
