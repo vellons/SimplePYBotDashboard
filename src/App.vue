@@ -64,7 +64,10 @@ export default {
         } else {
           this.onWebSocketMessage(JSON.parse(event.data))
         }
-      };
+      }
+      this.webSocket.onerror = () => {
+        this.$toast.warning("Web socket connection closed")
+      }
     },
     onWebSocketMessage: function (obj) {
       this.lastWebSocketResponse = obj

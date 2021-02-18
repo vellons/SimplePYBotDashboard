@@ -43,6 +43,10 @@ export default {
     rangeCurrentAngle: 0,
     rangeGoalAngle: 0
   }),
+  mounted() {
+    this.rangeGoalAngle = this.socketGoalValue
+    this.rangeCurrentAngle = this.socketCurrentValue
+  },
   methods: {
     rangeGoalChanged: function () {
       console.log(this.motorKey, this.rangeGoalAngle)
