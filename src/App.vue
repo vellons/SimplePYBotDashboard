@@ -47,11 +47,10 @@ export default {
               " code " + response.status)
         }
       }).catch((response) => {
-        this.$toast.error("Connection with " + this.getWebServerUrl() + " code " + response.status)
+        this.$toast.error("Connection with " + this.getWebServerUrl() + "failed. Code " + response.status)
       })
     },
     connectToWebSocket: function () {
-      console.log("connectToWebSocket", this.getWebSocketUrl())
       let _this = this
       this.webSocket = new WebSocket(this.getWebSocketUrl())
       this.webSocket.onmessage = (event) => {

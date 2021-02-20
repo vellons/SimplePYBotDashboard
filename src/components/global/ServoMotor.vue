@@ -1,7 +1,14 @@
 <template>
   <div class="servomotor">
     <div class="infos">
-      <span class="title">{{ motorKey }}</span> | {{ rangeGoalAngle }}
+      <button :disabled="parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - 5"
+              @click="removeStep">-{{ stepValue }}
+      </button>
+      <span class="info-title">{{ motorKey }}</span> | <span class="info-angle">{{ rangeGoalAngle }}</span>
+      <button :disabled="parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + 5"
+              @click="addStep">+{{ stepValue }}
+      </button>
+      <button :disabled="parseInt(rangeGoalAngle) === 0" @click="goToZero">0</button>
     </div>
     <div class="inputs-row">
       <div class="input-limit">{{ config.angle_limit[0] }}</div>
@@ -41,7 +48,8 @@ export default {
   },
   data: () => ({
     rangeCurrentAngle: 0,
-    rangeGoalAngle: 0
+    rangeGoalAngle: 0,
+    stepValue: 5
   }),
   mounted() {
     this.rangeGoalAngle = this.socketGoalValue
@@ -60,6 +68,18 @@ export default {
       }).catch(() => {
         this.$toast.error("Failed to move " + this.motorKey + " to " + this.rangeGoalAngle)
       })
+    },
+    goToZero: function () {
+      this.rangeGoalAngle = 0
+      this.rangeGoalChanged()
+    },
+    removeStep: function () {
+      this.rangeGoalAngle -= this.stepValue
+      this.rangeGoalChanged()
+    },
+    addStep: function () {
+      this.rangeGoalAngle += this.stepValue
+      this.rangeGoalChanged()
     }
   },
   watch: {
@@ -89,10 +109,17 @@ export default {
   width: 100%;
   text-align: center;
   margin-bottom: 3px;
+  height: 20px;
 }
 
-.title {
+.info-title {
   font-weight: bold;
+  padding: 0 5px;
+}
+
+.info-angle {
+  font-weight: bold;
+  padding: 0 5px;
 }
 
 .inputs-row {
