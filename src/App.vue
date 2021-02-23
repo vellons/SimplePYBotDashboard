@@ -52,7 +52,7 @@ export default {
     },
     connectToWebSocket: function () {
       let _this = this
-      this.webSocket = new WebSocket(this.getWebSocketUrl())
+      this.webSocket = new WebSocket(this.getWebSocketUrl() + "/")
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {
           let reader = new FileReader()

@@ -57,16 +57,17 @@ export default {
   },
   methods: {
     rangeGoalChanged: function () {
-      console.log(this.motorKey, this.rangeGoalAngle)
+      let newAngle = parseInt(this.rangeGoalAngle)
+      console.log(this.motorKey, newAngle)
       let data = {
-        "goal_angle": this.rangeGoalAngle
+        "goal_angle": newAngle
       }
       this.axios.patch(this.getWebServerUrl() + "/motors/" + this.motorKey + "/", data).then((response) => {
         if (response.status !== 200) {
-          this.$toast.error("Failed to move " + this.motorKey + " to " + this.rangeGoalAngle + ". Bad response")
+          this.$toast.error("Failed to move " + this.motorKey + " to " + newAngle + ". Bad response")
         }
       }).catch(() => {
-        this.$toast.error("Failed to move " + this.motorKey + " to " + this.rangeGoalAngle)
+        this.$toast.error("Failed to move " + this.motorKey + " to " + newAngle)
       })
     },
     goToZero: function () {
@@ -74,11 +75,11 @@ export default {
       this.rangeGoalChanged()
     },
     removeStep: function () {
-      this.rangeGoalAngle -= this.stepValue
+      this.rangeGoalAngle = parseInt(this.rangeGoalAngle) - this.stepValue
       this.rangeGoalChanged()
     },
     addStep: function () {
-      this.rangeGoalAngle += this.stepValue
+      this.rangeGoalAngle = parseInt(this.rangeGoalAngle) + this.stepValue
       this.rangeGoalChanged()
     }
   },
