@@ -2,15 +2,15 @@
   <div class="servomotor">
 
     <div class="infos">
-      <button :disabled="parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValue"
+      <button :disabled="pending || parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValue"
               @click="removeStep">-{{ stepValue }}
       </button>
       <span class="info-title">{{ motorKey }}</span> | <span class="info-angle">{{ rangeGoalAngle }}</span>
-      <button :disabled="parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + stepValue"
+      <button :disabled="pending || parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + stepValue"
               @click="addStep">+{{ stepValue }}
       </button>
       <button v-if="config.angle_limit[0] <= 0 && config.angle_limit[1] >= 0"
-              :disabled="parseInt(rangeGoalAngle) === 0" @click="goToZero">0
+              :disabled="pending || parseInt(rangeGoalAngle) === 0" @click="goToZero">0
       </button>
     </div>
 
@@ -54,7 +54,8 @@ export default {
   data: () => ({
     rangeCurrentAngle: 0,
     rangeGoalAngle: 0,
-    stepValue: 5
+    stepValue: 5,
+    pending: false
   }),
   mounted() {
     this.rangeGoalAngle = this.socketGoalValue
@@ -62,6 +63,7 @@ export default {
   },
   methods: {
     rangeGoalChanged: function () {
+      this.pending = true
       let newAngle = parseInt(this.rangeGoalAngle)
       console.log(this.motorKey, newAngle)
       let data = {
@@ -71,8 +73,10 @@ export default {
         if (response.status !== 200) {
           this.$toast.error("Failed to move " + this.motorKey + " to " + newAngle + ". Bad response")
         }
+        this.pending = false
       }).catch(() => {
         this.$toast.error("Failed to move " + this.motorKey + " to " + newAngle)
+        this.pending = false
       })
     },
     goToZero: function () {
