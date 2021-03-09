@@ -5,7 +5,7 @@
         v-for="(motor, key, index) in config" :key="key"
         :config="motor" :motorKey="key"
         :socketGoalValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).goal_angle : 0"
-        :socketCurrentValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).current_angle : 0"/>
+        :socketCurrentValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).current_angle : null"/>
   </div>
 </template>
 
@@ -40,6 +40,12 @@ export default {
 
 .servomotor {
   flex: 0 50%;
+}
+
+@media only screen and (max-width: 700px) {
+  .servomotor {
+    flex: 0 100%;
+  }
 }
 
 .servomotor-big {

@@ -1,30 +1,36 @@
 <template>
-  <ServomotorsGroup
-      v-if="!loadingRobotConfig && robotConfig.motors" :config="robotConfig.motors"
-      :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"/>
-
-  <br/>
-  <br/>
-  <label for="web-server-url">Web server url: </label>
-  <input type="text" id="web-server-url" v-model="webServerUrl" style="min-width: 250px;"/>
-  <button @click="connectToWebServer">Connect to web server</button>
-  <br/>
-  <label for="web-socket-url">Web socket url: </label>
-  <input type="text" id="web-socket-url" v-model="webSocketUrl" style="min-width: 250px;"/>
-  <button @click="connectToWebSocket">Connect to web socket</button>
-  <br/>
-  {{ lastWebSocketResponse }}
+  <div>
+    <SdkManagement
+        v-if="!loadingRobotConfig && robotConfig.motors"
+        :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
+    <ServomotorsGroup
+        v-if="!loadingRobotConfig && robotConfig.motors" :config="robotConfig.motors"
+        :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"/>
+    <br/>
+    <br/>
+    <label for="web-server-url">Web server url: </label>
+    <input type="text" id="web-server-url" v-model="webServerUrl" style="min-width: 250px;"/>
+    <button @click="connectToWebServer">Connect to web server</button>
+    <br/>
+    <label for="web-socket-url">Web socket url: </label>
+    <input type="text" id="web-socket-url" v-model="webSocketUrl" style="min-width: 250px;"/>
+    <button @click="connectToWebSocket">Connect to web socket</button>
+    <br/>
+    {{ lastWebSocketResponse }}
+  </div>
 </template>
 
 <script>
-import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
 import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
+import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
+import SdkManagement from "@/components/global/SdkManagement"
 
 export default {
   name: "App",
   mixins: [simplePYBotSDK],
   components: {
-    ServomotorsGroup
+    ServomotorsGroup,
+    SdkManagement
   },
   data: () => ({
     loadingRobotConfig: true,
@@ -40,18 +46,19 @@ export default {
           this.robotConfig = response.data
           if (this.robotConfig.id) {
             this.loadingRobotConfig = false
-            this.$toast.success(this.robotConfig.id + " ready")
+            this.$toast.success(this.robotConfig.name + " ready")
           }
         } else {
           this.$toast.error("Bad response from " + this.getWebServerUrl() + "/configuration/" +
               " code " + response.status)
         }
       }).catch((response) => {
-        this.$toast.error("Connection with " + this.getWebServerUrl() + "failed. Code " + response.status)
+        this.$toast.error("Connection with " + this.getWebServerUrl() + " failed. Code " + response.status)
       })
     },
     connectToWebSocket: function () {
       let _this = this
+      this.lastWebSocketResponse = {}
       this.webSocket = new WebSocket(this.getWebSocketUrl() + "/")
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {

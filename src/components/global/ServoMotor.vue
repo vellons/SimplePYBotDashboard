@@ -1,15 +1,19 @@
 <template>
   <div class="servomotor">
+
     <div class="infos">
-      <button :disabled="parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - 5"
+      <button :disabled="parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValue"
               @click="removeStep">-{{ stepValue }}
       </button>
       <span class="info-title">{{ motorKey }}</span> | <span class="info-angle">{{ rangeGoalAngle }}</span>
-      <button :disabled="parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + 5"
+      <button :disabled="parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + stepValue"
               @click="addStep">+{{ stepValue }}
       </button>
-      <button :disabled="parseInt(rangeGoalAngle) === 0" @click="goToZero">0</button>
+      <button v-if="config.angle_limit[0] <= 0 && config.angle_limit[1] >= 0"
+              :disabled="parseInt(rangeGoalAngle) === 0" @click="goToZero">0
+      </button>
     </div>
+
     <div class="inputs-row">
       <div class="input-limit">{{ config.angle_limit[0] }}</div>
       <div class="inputs-wrap">
@@ -17,11 +21,12 @@
         <input id="goal" class="goal-input" type="range" @change="rangeGoalChanged"
                :min="config.angle_limit[0]" v-model="rangeGoalAngle" :max="config.angle_limit[1]" :step="1"/>
         <label class="sr-only" for="current"></label>
-        <input id="current" class="current-input" type="range" disabled
+        <input v-if="socketCurrentValue != null" id="current" class="current-input" type="range" disabled
                :min="config.angle_limit[0]" v-model="rangeCurrentAngle" :max="config.angle_limit[1]" :step="1"/>
       </div>
       <div class="input-limit">{{ config.angle_limit[1] }}</div>
     </div>
+
   </div>
 </template>
 
@@ -103,7 +108,6 @@ export default {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
-  border: 1px solid orange;
 }
 
 .infos {
@@ -190,7 +194,7 @@ input[type=range]::-moz-range-thumb {
 }
 
 input[type=range]:focus, input[type=range]:focus {
-  color: blue;
+  color: lightskyblue;
   outline: none;
 }
 

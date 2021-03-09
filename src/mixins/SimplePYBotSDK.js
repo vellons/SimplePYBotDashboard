@@ -1,6 +1,6 @@
 export const simplePYBotSDK = {
     data: () => ({
-        webServerUrl: "/api/v1/robot", // dev proxy
+        webServerUrl: "/api/v1/robot", // proxy
         webSocketUrl: "ws://localhost:65432",
     }),
     methods: {
