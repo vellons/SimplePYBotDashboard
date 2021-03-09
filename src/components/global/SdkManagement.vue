@@ -1,11 +1,12 @@
 <template>
   <div class="sdk-toolbar">
-    <div class="toolbar-item" v-if="robotConfig.name">{{ robotConfig.name }}</div>
+    <div class="toolbar-item" v-if="robotConfig.name"><b>{{ robotConfig.name }}</b></div>
     <div class="toolbar-item speed">
-      <label for="speed-range" class="speed-lbl"> {{ rangeSpeed === currentSpeed ? currentSpeed : rangeSpeed }} </label>
+      <label for="speed-range" class="speed-lbl"> {{ rangeSpeed }} </label>
       <input
           id="speed-range" class="speed-range" v-model="rangeSpeed"
-          type="range" min="0.1" max="5" step="0.1" @change="rangeSpeedChanged">
+          type="range" min="0.1" max="5" step="0.1" @change="rangeSpeedChanged"
+          @focusin="rangeSpeedDrag = true" @focusout="rangeSpeedDrag = false">
     </div>
     <div v-if="robotStatus.system" class="toolbar-item system">
       <span v-if="robotStatus.system.temperature">{{ robotStatus.system.temperature + '°C - ' }}</span>
@@ -32,7 +33,8 @@ export default {
   },
   data: () => ({
     currentSpeed: 1,
-    rangeSpeed: 1
+    rangeSpeed: 1,
+    rangeSpeedDrag: false
   }),
   mounted() {
     this.currentSpeed = this.robotStatus.sdk?.robot_speed
@@ -57,6 +59,9 @@ export default {
   watch: {
     robotStatus: function () {
       this.currentSpeed = this.robotStatus.sdk?.robot_speed
+      if (this.currentSpeed && !this.rangeSpeedDrag) {
+        this.rangeSpeed = parseFloat(this.currentSpeed)
+      }
     }
   }
 }
@@ -86,6 +91,7 @@ export default {
 
 .speed-range {
   width: 250px;
+  outline: none;
 }
 
 .speed-lbl {
