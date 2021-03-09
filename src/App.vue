@@ -1,13 +1,19 @@
 <template>
   <div>
     <SdkManagement
-        v-if="!loadingRobotConfig && robotConfig.motors"
-        :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
+        v-if="!loadingRobotConfig"
+        :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
+        :version="sdkVersion"/>
     <ServomotorsGroup
         v-if="!loadingRobotConfig && robotConfig.motors" :config="robotConfig.motors"
         :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"/>
     <br/>
     <br/>
+    <RobotActions
+        v-if="!loadingRobotConfig"
+        :robotConfig="robotConfig"/>
+    <br/>
+
     <label for="web-server-url">Web server url: </label>
     <input type="text" id="web-server-url" v-model="webServerUrl" style="min-width: 250px;"/>
     <button @click="connectToWebServer">Connect to web server</button>
@@ -17,6 +23,7 @@
     <button @click="connectToWebSocket">Connect to web socket</button>
     <br/>
     {{ lastWebSocketResponse }}
+
   </div>
 </template>
 
@@ -24,11 +31,13 @@
 import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
 import SdkManagement from "@/components/global/SdkManagement"
+import RobotActions from "@/components/global/RobotActions";
 
 export default {
   name: "App",
   mixins: [simplePYBotSDK],
   components: {
+    RobotActions,
     ServomotorsGroup,
     SdkManagement
   },
@@ -36,6 +45,7 @@ export default {
     loadingRobotConfig: true,
     webSocket: null,
     robotConfig: {},
+    sdkVersion: null,
     lastWebSocketResponse: {},
   }),
   methods: {
@@ -44,6 +54,9 @@ export default {
       this.axios.get(this.getWebServerUrl() + "/configuration/").then((response) => {
         if (response.status === 200) {
           this.robotConfig = response.data
+          if (response.headers.simplepybotsdk) {
+            this.sdkVersion = response.headers.simplepybotsdk
+          }
           if (this.robotConfig.id) {
             this.loadingRobotConfig = false
             this.$toast.success(this.robotConfig.name + " ready")

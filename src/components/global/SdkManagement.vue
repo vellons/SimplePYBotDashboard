@@ -8,9 +8,10 @@
           type="range" min="0.1" max="5" step="0.1" @change="rangeSpeedChanged"
           @focusin="rangeSpeedDrag = true" @focusout="rangeSpeedDrag = false">
     </div>
-    <div v-if="robotStatus.system" class="toolbar-item system">
-      <span v-if="robotStatus.system.temperature">{{ robotStatus.system.temperature + '°C - ' }}</span>
-      <span v-if="robotStatus.system.timestamp">{{ robotStatus.system.timestamp }}</span>
+    <div class="toolbar-item system">
+      <span v-if="robotStatus.system?.temperature">{{ robotStatus.system?.temperature + '°C - ' }}</span>
+      <span v-if="robotStatus.system?.timestamp">{{ robotStatus.system?.timestamp }}</span>
+      <span v-if="version"><i>{{ ' - ' + version }}</i></span>
     </div>
   </div>
 </template>
@@ -29,6 +30,10 @@ export default {
     robotStatus: {
       type: Object,
       required: true
+    },
+    version: {
+      type: String,
+      default: ""
     }
   },
   data: () => ({
@@ -52,7 +57,7 @@ export default {
         }
       }).catch(() => {
         this.rangeSpeed = this.currentSpeed
-        this.$toast.error("Failed to change speed to " + this.rangeSpeed + "")
+        this.$toast.error("Failed to change speed to " + this.rangeSpeed)
       })
     },
   },
