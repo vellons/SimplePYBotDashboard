@@ -2,44 +2,55 @@
   <div>
 
     <SdkManagement
+        class="home-item"
         v-if="!loadingRobotConfig"
         :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
         :version="sdkVersion"/>
     <ServomotorsGroup
+        class="home-item"
         v-if="!loadingRobotConfig && robotConfig.motors" :config="robotConfig.motors"
         :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"/>
-    <br/>
+    <SensorsGroup
+        class="home-item"
+        v-if="!loadingRobotConfig && robotConfig.sensors" :config="robotConfig.sensors"
+        :sensorsStatus="lastWebSocketResponse.sensors ? lastWebSocketResponse.sensors : []"/>
     <RobotActions
+        class="home-item"
         v-if="!loadingRobotConfig"
         :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
-    <br/>
 
-    <label for="web-server-url">Web server url: </label>
-    <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"/>
-    <button @click="connectToWebServer">Connect to web server</button>
-    <br/>
-    <label for="web-socket-url">Web socket url: </label>
-    <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"/>
-    <button @click="connectToWebSocket">Connect to web socket</button>
-    <br/>
-    {{ lastWebSocketResponse }}
+    <div class="home-item">
+      <label for="web-server-url">Web server url: </label>
+      <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"/>
+      <button @click="connectToWebServer">Connect to web server</button>
+      <br/>
+      <label for="web-socket-url">Web socket url: </label>
+      <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"/>
+      <button @click="connectToWebSocket">Connect to web socket</button>
+    </div>
+
+    <div class="home-item">
+      {{ lastWebSocketResponse }}
+    </div>
 
   </div>
 </template>
 
 <script>
 import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
-import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
 import SdkManagement from "@/components/SdkManagement"
+import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
+import SensorsGroup from "@/components/SensorsGroup"
 import RobotActions from "@/components/RobotActions"
 
 export default {
   name: "App",
   mixins: [simplePYBotSDK],
   components: {
-    RobotActions,
+    SdkManagement,
     ServomotorsGroup,
-    SdkManagement
+    SensorsGroup,
+    RobotActions
   },
   data: () => ({
     loadingRobotConfig: true,
@@ -97,6 +108,10 @@ export default {
 </script>
 
 <style scoped>
+.home-item {
+  margin: 10px 15px;
+}
+
 .server-input {
   min-width: 300px;
 }

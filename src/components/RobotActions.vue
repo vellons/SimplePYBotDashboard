@@ -124,10 +124,6 @@ export default {
 </script>
 
 <style scoped>
-.robot-actions {
-  padding: 15px;
-}
-
 .robot-actions-item {
   display: flex;
 }

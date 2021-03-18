@@ -11,6 +11,7 @@
     <div class="toolbar-item system">
       <span v-if="robotStatus.system?.temperature">{{ robotStatus.system?.temperature + '°C - ' }}</span>
       <span v-if="robotStatus.system?.timestamp">{{ robotStatus.system?.timestamp }}</span>
+      <span v-else>Connect with websocket to receive realtime data</span>
       <span v-if="version"><i>{{ ' - ' + version }}</i></span>
     </div>
   </div>
@@ -75,13 +76,17 @@ export default {
 <style scoped>
 .sdk-toolbar {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 3px 15px 10px 15px;
+  flex-wrap: wrap;
 }
 
 .toolbar-item {
-  flex-grow: 1;
+  flex: 0 33%;
+}
+
+@media only screen and (max-width: 700px) {
+  .toolbar-item {
+    flex: 0 100%;
+  }
 }
 
 .toolbar-item.speed {
