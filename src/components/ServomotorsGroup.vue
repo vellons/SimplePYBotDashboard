@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import ServoMotor from "@/components/global/ServoMotor.vue"
+import ServoMotor from "@/components/ServoMotor.vue"
 import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 
 export default {

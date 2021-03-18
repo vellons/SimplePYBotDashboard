@@ -30,8 +30,8 @@
 <script>
 import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
-import SdkManagement from "@/components/global/SdkManagement"
-import RobotActions from "@/components/global/RobotActions";
+import SdkManagement from "@/components/SdkManagement"
+import RobotActions from "@/components/RobotActions"
 
 export default {
   name: "App",
