@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <SdkManagement
         v-if="!loadingRobotConfig"
         :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
@@ -8,18 +9,17 @@
         v-if="!loadingRobotConfig && robotConfig.motors" :config="robotConfig.motors"
         :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"/>
     <br/>
-    <br/>
     <RobotActions
         v-if="!loadingRobotConfig"
-        :robotConfig="robotConfig"/>
+        :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
     <br/>
 
     <label for="web-server-url">Web server url: </label>
-    <input type="text" id="web-server-url" v-model="webServerUrl" style="min-width: 250px;"/>
+    <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"/>
     <button @click="connectToWebServer">Connect to web server</button>
     <br/>
     <label for="web-socket-url">Web socket url: </label>
-    <input type="text" id="web-socket-url" v-model="webSocketUrl" style="min-width: 250px;"/>
+    <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"/>
     <button @click="connectToWebSocket">Connect to web socket</button>
     <br/>
     {{ lastWebSocketResponse }}
@@ -51,6 +51,7 @@ export default {
   methods: {
     connectToWebServer: async function () {
       this.loadingRobotConfig = true
+      this.lastWebSocketResponse = {}
       this.axios.get(this.getWebServerUrl() + "/configuration/").then((response) => {
         if (response.status === 200) {
           this.robotConfig = response.data
@@ -95,6 +96,8 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.server-input {
+  min-width: 300px;
+}
 </style>

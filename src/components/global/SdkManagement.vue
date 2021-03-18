@@ -52,12 +52,12 @@ export default {
       }
       this.axios.patch(this.getWebServerUrl() + "/sdk/", data).then((response) => {
         if (response.status !== 200) {
-          this.rangeSpeed = this.currentSpeed
           this.$toast.error("Failed to change speed to " + this.rangeSpeed + ". Bad response")
+          this.rangeSpeed = this.currentSpeed
         }
       }).catch(() => {
-        this.rangeSpeed = this.currentSpeed
         this.$toast.error("Failed to change speed to " + this.rangeSpeed)
+        this.rangeSpeed = this.currentSpeed
       })
     },
   },
