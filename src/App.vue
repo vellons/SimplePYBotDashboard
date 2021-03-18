@@ -90,7 +90,7 @@ export default {
           let reader = new FileReader()
           reader.onload = () => {
             _this.onWebSocketMessage(JSON.parse(String(reader.result)))
-          };
+          }
           reader.readAsText(event.data)
         } else {
           this.onWebSocketMessage(JSON.parse(event.data))

@@ -13,7 +13,7 @@
         <input v-if="selectedPose !== ''" v-model="poseSeconds" class="robot-actions-input"
                type="number" min="0" max="120" placeholder="seconds"/>
       </label>
-      <button v-if="selectedPose !== ''" @click="goToPose">
+      <button v-if="selectedPose !== ''" @click="goToPose" :disabled="pending">
         Go to {{ selectedPose }} in {{ poseSeconds }} seconds
       </button>
     </div>
@@ -27,10 +27,10 @@
         <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
                type="number" min="0" max="120" placeholder="seconds"/>
       </label>
-      <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" style="height: 22px">
+      <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" style="height: 22px" :disabled="pending">
         Move point to point in {{ pointToPointSeconds }} seconds
       </button>
-      <button @click="copyCurrentPosition" style="height: 22px">
+      <button @click="copyCurrentPosition" style="height: 22px" :disabled="pending">
         Copy current position
       </button>
     </div>
@@ -60,13 +60,15 @@ export default {
     poseSeconds: 0,
     pointToPointMotors: '',
     pointToPointSeconds: 0,
-    textAreaRows: 4
+    textAreaRows: 4,
+    pending: false
   }),
   methods: {
     goToPose: function () {
       if (this.poseSeconds === '') this.poseSeconds = 0
       let pose = this.selectedPose
       this.selectedPose = ""
+      this.pending = true
       let data = {
         "seconds": parseFloat(this.poseSeconds)
       }
@@ -74,8 +76,10 @@ export default {
         if (response.status !== 200) {
           this.$toast.error("Failed to go to pose " + pose + ". Bad response")
         }
+        this.pending = false
       }).catch(() => {
         this.$toast.error("Failed to go to pose " + pose)
+        this.pending = false
       })
     },
     movePointToPoint: function () {
@@ -84,6 +88,7 @@ export default {
         this.$toast.warning("Insert a valid JSON")
         return
       }
+      this.pending = true
       let data = {
         "seconds": parseFloat(this.pointToPointSeconds),
         ...JSON.parse(this.pointToPointMotors)
@@ -92,8 +97,10 @@ export default {
         if (response.status !== 200) {
           this.$toast.error("Failed to move point to point. Bad response")
         }
+        this.pending = false
       }).catch(() => {
         this.$toast.error("Failed to go to move point to point")
+        this.pending = false
       })
     },
     copyCurrentPosition: function () {
@@ -113,11 +120,11 @@ export default {
     },
     isJsonString: function (str) {
       try {
-        JSON.parse(str);
+        JSON.parse(str)
       } catch (e) {
-        return false;
+        return false
       }
-      return true;
+      return true
     }
   }
 }

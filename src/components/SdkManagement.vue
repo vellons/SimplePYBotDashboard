@@ -4,7 +4,7 @@
     <div class="toolbar-item speed">
       <label for="speed-range" class="speed-lbl"> {{ rangeSpeed }} </label>
       <input
-          id="speed-range" class="speed-range" v-model="rangeSpeed"
+          id="speed-range" class="speed-range" v-model="rangeSpeed" :disabled="pending"
           type="range" min="0.1" max="5" step="0.1" @change="rangeSpeedChanged"
           @focusin="rangeSpeedDrag = true" @focusout="rangeSpeedDrag = false">
     </div>
@@ -40,7 +40,8 @@ export default {
   data: () => ({
     currentSpeed: 1,
     rangeSpeed: 1,
-    rangeSpeedDrag: false
+    rangeSpeedDrag: false,
+    pending: false
   }),
   mounted() {
     this.currentSpeed = this.robotStatus.sdk?.robot_speed
@@ -48,6 +49,7 @@ export default {
   },
   methods: {
     rangeSpeedChanged: function () {
+      this.pending = true
       let data = {
         "robot_speed": parseFloat(this.rangeSpeed)
       }
@@ -56,9 +58,11 @@ export default {
           this.$toast.error("Failed to change speed to " + this.rangeSpeed + ". Bad response")
           this.rangeSpeed = this.currentSpeed
         }
+        this.pending = false
       }).catch(() => {
         this.$toast.error("Failed to change speed to " + this.rangeSpeed)
         this.rangeSpeed = this.currentSpeed
+        this.pending = false
       })
     },
   },
