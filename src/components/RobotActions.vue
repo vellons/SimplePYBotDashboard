@@ -39,13 +39,15 @@
 </template>
 
 <script>
-import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 import {toRaw} from "@vue/reactivity"
 
 export default {
   name: "RobotActions",
-  mixins: [simplePYBotSDK],
   props: {
+    webServerUrl: {
+      type: String,
+      required: true
+    },
     robotConfig: {
       type: Object,
       required: true
@@ -72,7 +74,7 @@ export default {
       let data = {
         "seconds": parseFloat(this.poseSeconds)
       }
-      this.axios.post(this.getWebServerUrl() + "/go-to-pose/" + pose + "/", data).then((response) => {
+      this.axios.post(this.webServerUrl + "/go-to-pose/" + pose + "/", data).then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to go to pose " + pose + ". Bad response")
         }
@@ -93,7 +95,7 @@ export default {
         "seconds": parseFloat(this.pointToPointSeconds),
         ...JSON.parse(this.pointToPointMotors)
       }
-      this.axios.post(this.getWebServerUrl() + "/move-point-to-point/", data).then((response) => {
+      this.axios.post(this.webServerUrl + "/move-point-to-point/", data).then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to move point to point. Bad response")
         }

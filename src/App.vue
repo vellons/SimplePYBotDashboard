@@ -5,31 +5,34 @@
         class="home-item"
         v-if="!loadingRobotConfig"
         :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
-        :version="sdkVersion"/>
+        :version="sdkVersion" :webServerUrl="webServerUrl"/>
     <ServomotorsGroup
         class="home-item"
         v-if="!loadingRobotConfig && robotConfig.motors" :config="robotConfig.motors"
-        :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"/>
+        :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []" :webServerUrl="webServerUrl"/>
     <SensorsGroup
         class="home-item"
         v-if="!loadingRobotConfig && robotConfig.sensors" :config="robotConfig.sensors"
         :sensorsStatus="lastWebSocketResponse.sensors ? lastWebSocketResponse.sensors : []"/>
     <RobotActions
         class="home-item"
-        v-if="!loadingRobotConfig"
+        v-if="!loadingRobotConfig" :webServerUrl="webServerUrl"
         :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
 
     <div class="home-item">
       <label for="web-server-url">Web server url: </label>
-      <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"/>
+      <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"
+             placeholder="Insert your robot web server address"/>
       <button @click="connectToWebServer">Connect to web server</button>
       <br/>
-      <label for="web-socket-url">Web socket url: </label>
-      <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"/>
-      <button @click="connectToWebSocket">Connect to web socket</button>
+      <label for="web-socket-url">Websocket url: </label>
+      <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"
+             placeholder="Insert your robot websocket address" :disabled="webSocket !== null"/>
+      <button v-if="webSocket === null" @click="connectToWebSocket">Connect to websocket</button>
+      <button v-else @click="closeWebSocket">Close websocket</button>
     </div>
 
-    <div class="home-item">
+    <div class="home-item" v-if="webSocket !== null">
       {{ lastWebSocketResponse }}
     </div>
 
@@ -37,7 +40,6 @@
 </template>
 
 <script>
-import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 import SdkManagement from "@/components/SdkManagement"
 import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
 import SensorsGroup from "@/components/SensorsGroup"
@@ -45,7 +47,6 @@ import RobotActions from "@/components/RobotActions"
 
 export default {
   name: "App",
-  mixins: [simplePYBotSDK],
   components: {
     SdkManagement,
     ServomotorsGroup,
@@ -53,6 +54,8 @@ export default {
     RobotActions
   },
   data: () => ({
+    webServerUrl: "/api/v1/robot",
+    webSocketUrl: "ws://localhost:65432",
     loadingRobotConfig: true,
     webSocket: null,
     robotConfig: {},
@@ -63,7 +66,7 @@ export default {
     connectToWebServer: async function () {
       this.loadingRobotConfig = true
       this.lastWebSocketResponse = {}
-      this.axios.get(this.getWebServerUrl() + "/configuration/").then((response) => {
+      this.axios.get(this.webServerUrl + "/configuration/").then((response) => {
         if (response.status === 200) {
           this.robotConfig = response.data
           if (response.headers.simplepybotsdk) {
@@ -74,17 +77,21 @@ export default {
             this.$toast.success(this.robotConfig.name + " ready")
           }
         } else {
-          this.$toast.error("Bad response from " + this.getWebServerUrl() + "/configuration/" +
+          this.$toast.error("Bad response from " + this.webServerUrl + "/configuration/" +
               " code " + response.status)
         }
-      }).catch((response) => {
-        this.$toast.error("Connection with " + this.getWebServerUrl() + " failed. Code " + response.status)
+      }).catch(() => {
+        this.$toast.error("Connection with " + this.webServerUrl + " failed")
       })
     },
     connectToWebSocket: function () {
       let _this = this
       this.lastWebSocketResponse = {}
-      this.webSocket = new WebSocket(this.getWebSocketUrl() + "/")
+      if (this.webSocket) {
+        console.log("Close old connection")
+        this.webSocket.close()
+      }
+      this.webSocket = new WebSocket(this.webSocketUrl + "/")
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {
           let reader = new FileReader()
@@ -97,8 +104,17 @@ export default {
         }
       }
       this.webSocket.onerror = () => {
-        this.$toast.warning("Web socket connection closed")
+        this.$toast.warning("Websocket connection error")
       }
+      this.webSocket.onclose = () => {
+        this.$toast.warning("Websocket connection closed")
+      }
+    },
+    closeWebSocket: function () {
+      this.webSocket.close()
+      this.$toast.warning("Websocket connection closed")
+      this.webSocket = null
+      this.onWebSocketMessage({})
     },
     onWebSocketMessage: function (obj) {
       this.lastWebSocketResponse = obj

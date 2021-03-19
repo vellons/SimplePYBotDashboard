@@ -31,12 +31,13 @@
 </template>
 
 <script>
-import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
-
 export default {
   name: "ServoMotor",
-  mixins: [simplePYBotSDK],
   props: {
+    webServerUrl: {
+      type: String,
+      required: true
+    },
     config: {
       type: Object,
       required: true
@@ -69,7 +70,7 @@ export default {
       let data = {
         "goal_angle": newAngle
       }
-      this.axios.patch(this.getWebServerUrl() + "/motors/" + this.motorKey + "/", data).then((response) => {
+      this.axios.patch(this.webServerUrl + "/motors/" + this.motorKey + "/", data).then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to move " + this.motorKey + " to " + newAngle + ". Bad response")
         }

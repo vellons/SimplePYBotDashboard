@@ -8,11 +8,8 @@
 </template>
 
 <script>
-import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
-
 export default {
   name: "SensorsGroup",
-  mixins: [simplePYBotSDK],
   props: {
     config: {
       type: Object,

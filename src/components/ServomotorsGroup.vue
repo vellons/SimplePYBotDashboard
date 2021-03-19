@@ -3,6 +3,7 @@
     <ServoMotor
         class="servomotor" :class="{'servomotor-big': index === 0 && (Object.keys(config).length % 2) === 1}"
         v-for="(motor, key, index) in config" :key="key"
+        :webServerUrl="webServerUrl"
         :config="motor" :motorKey="key"
         :socketGoalValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).goal_angle : 0"
         :socketCurrentValue="motorStatus.find(x => x.key === key) ? motorStatus.find(x => x.key === key).current_angle : null"/>
@@ -11,15 +12,17 @@
 
 <script>
 import ServoMotor from "@/components/ServoMotor.vue"
-import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
 
 export default {
   name: "ServomotorsGroup",
-  mixins: [simplePYBotSDK],
   components: {
     ServoMotor
   },
   props: {
+    webServerUrl: {
+      type: String,
+      required: true
+    },
     config: {
       type: Object,
       required: true

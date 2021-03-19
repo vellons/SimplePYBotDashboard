@@ -10,7 +10,7 @@
     </div>
     <div class="toolbar-item system">
       <span v-if="robotStatus.system?.temperature">{{ robotStatus.system?.temperature + '°C - ' }}</span>
-      <span v-if="robotStatus.system?.timestamp">{{ robotStatus.system?.timestamp }}</span>
+      <span v-if="robotStatus.system?.timestamp">(Delay:{{ statusDelay }} sec) - {{ formattedDate }}</span>
       <span v-else>Connect with websocket to receive realtime data</span>
       <span v-if="version"><i>{{ ' - ' + version }}</i></span>
     </div>
@@ -18,12 +18,13 @@
 </template>
 
 <script>
-import {simplePYBotSDK} from "@/mixins/SimplePYBotSDK"
-
 export default {
   name: "SdkManagement",
-  mixins: [simplePYBotSDK],
   props: {
+    webServerUrl: {
+      type: String,
+      required: true
+    },
     robotConfig: {
       type: Object,
       required: true
@@ -41,7 +42,9 @@ export default {
     currentSpeed: 1,
     rangeSpeed: 1,
     rangeSpeedDrag: false,
-    pending: false
+    pending: false,
+    formattedDate: "",
+    statusDelay: 0
   }),
   mounted() {
     this.currentSpeed = this.robotStatus.sdk?.robot_speed
@@ -53,7 +56,7 @@ export default {
       let data = {
         "robot_speed": parseFloat(this.rangeSpeed)
       }
-      this.axios.patch(this.getWebServerUrl() + "/sdk/", data).then((response) => {
+      this.axios.patch(this.webServerUrl + "/sdk/", data).then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to change speed to " + this.rangeSpeed + ". Bad response")
           this.rangeSpeed = this.currentSpeed
@@ -71,6 +74,12 @@ export default {
       this.currentSpeed = this.robotStatus.sdk?.robot_speed
       if (this.currentSpeed && !this.rangeSpeedDrag) {
         this.rangeSpeed = parseFloat(this.currentSpeed)
+      }
+      if (this.robotStatus?.system?.timestamp) {
+        let timestamp = new Date(this.robotStatus.system.timestamp)
+        this.statusDelay = ((Date.now() - timestamp) / 1000).toFixed(3)
+        this.formattedDate = timestamp.getHours() + ":" + timestamp.getMinutes() + ":" + timestamp.getSeconds() + ":"
+            + (timestamp.getMilliseconds() + "000").substr(0, 3)
       }
     }
   }
