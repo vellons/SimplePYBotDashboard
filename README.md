@@ -1,4 +1,8 @@
 # Dashboard for Simple Python Robot SDK
+Basic development dashboard for [SimplePYBotSDK](https://firebase.google.com/docs/auth).
+
+Dev link: https://vellons.github.io/SimplePYBotDashboard/
+![Screen](media/dashboard_example.png)
 
 ## Project setup
 ```
