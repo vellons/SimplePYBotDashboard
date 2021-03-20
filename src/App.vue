@@ -45,6 +45,11 @@
       {{ lastWebSocketResponse }}
     </div>
 
+    <br>
+    <div class="home-item">
+      Version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
+    </div>
+
   </div>
 </template>
 
@@ -71,8 +76,13 @@ export default {
     robotConfigAvailable: false,
     sdkVersion: null,
     lastWebSocketResponse: {},
+    appVersion: "0.1.0",
+    commitSha: "",
   }),
   mounted() {
+    if (process.env.VUE_APP_COMMIT_SHA) {
+      this.commitSha = process.env.VUE_APP_COMMIT_SHA.substring(0, 7)
+    }
     setTimeout(this.readQueryConf, 100)
   },
   methods: {
@@ -125,9 +135,11 @@ export default {
       }
       this.webSocket.onerror = () => {
         this.$toast.warning("Websocket connection error")
+        this.webSocket = null
       }
       this.webSocket.onclose = () => {
         this.$toast.warning("Websocket connection closed")
+        this.webSocket = null
       }
     },
     closeWebSocket: function () {
@@ -162,6 +174,11 @@ export default {
 
       if (this.$route.query.autoconnect) {
         this.connectToWebServer()
+      }
+    },
+    setAllCommitSha: function () {
+      if (process.env.VUE_APP_COMMIT_SHA) {
+        this.commitSha = process.env.VUE_APP_COMMIT_SHA
       }
     }
   }
