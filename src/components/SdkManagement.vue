@@ -78,7 +78,9 @@ export default {
       if (this.robotStatus?.system?.timestamp) {
         let timestamp = new Date(this.robotStatus.system.timestamp)
         this.statusDelay = ((Date.now() - timestamp) / 1000).toFixed(3)
-        this.formattedDate = timestamp.getHours() + ":" + timestamp.getMinutes() + ":" + timestamp.getSeconds() + ":"
+        this.formattedDate = ("0" + timestamp.getHours()).substr(-2) + ":"
+            + ("0" + timestamp.getMinutes()).substr(-2) + ":"
+            + ("0" + timestamp.getSeconds()).substr(-2) + ":"
             + (timestamp.getMilliseconds() + "000").substr(0, 3)
       }
     }
