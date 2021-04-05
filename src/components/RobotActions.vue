@@ -155,4 +155,8 @@ export default {
   min-width: 250px;
   min-height: 40px;
 }
+
+button {
+  cursor: pointer;
+}
 </style>

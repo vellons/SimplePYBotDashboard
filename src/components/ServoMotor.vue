@@ -15,7 +15,7 @@
     </div>
 
     <div class="inputs-row">
-      <div class="input-limit">{{ config.angle_limit[0] }}</div>
+      <div class="input-limit" @click="goToMin">{{ config.angle_limit[0] }}</div>
       <div class="inputs-wrap">
         <label class="sr-only" for="goal"></label>
         <input id="goal" class="goal-input" type="range" @change="rangeGoalChanged"
@@ -24,7 +24,7 @@
         <input v-if="socketCurrentValue != null" id="current" class="current-input" type="range" disabled
                :min="config.angle_limit[0]" v-model="rangeCurrentAngle" :max="config.angle_limit[1]" :step="1"/>
       </div>
-      <div class="input-limit">{{ config.angle_limit[1] }}</div>
+      <div class="input-limit" @click="goToMax">{{ config.angle_limit[1] }}</div>
     </div>
 
   </div>
@@ -91,6 +91,16 @@ export default {
     addStep: function () {
       this.rangeGoalAngle = parseInt(this.rangeGoalAngle) + this.stepValue
       this.rangeGoalChanged()
+    },
+    goToMin: function () {
+      if (this.pending || this.rangeGoalAngle === this.config.angle_limit[0]) return
+      this.rangeGoalAngle = this.config.angle_limit[0]
+      this.rangeGoalChanged()
+    },
+    goToMax: function () {
+      if (this.pending || this.rangeGoalAngle === this.config.angle_limit[1]) return
+      this.rangeGoalAngle = this.config.angle_limit[1]
+      this.rangeGoalChanged()
     }
   },
   watch: {
@@ -113,6 +123,10 @@ export default {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
 }
 
 .infos {
@@ -141,6 +155,7 @@ export default {
 .input-limit {
   min-width: 35px;
   text-align: center;
+  cursor: pointer;
 }
 
 .inputs-wrap {

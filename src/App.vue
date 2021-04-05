@@ -23,20 +23,21 @@
       <label for="web-server-url">Web server url: </label>
       <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"
              placeholder="Insert your robot web server address" :disabled="robotConfigAvailable"/>
-      <button v-if="!robotConfigAvailable" @click="connectToWebServer" :disabled="webServerUrl === ''">
+      <button v-if="!robotConfigAvailable" @click="connectToWebServer" :disabled="webServerUrl === ''"
+              class="main-button">
         Connect to web server
       </button>
-      <button v-else @click="closeDashboard">
+      <button v-else @click="closeDashboard" class="main-button">
         Close dashboard
       </button>
       <br/>
       <label for="web-socket-url">Websocket url: </label>
       <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"
              placeholder="Insert your robot websocket address" :disabled="webSocket !== null"/>
-      <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''">
+      <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''" class="main-button">
         Connect to websocket
       </button>
-      <button v-else @click="closeWebSocket">
+      <button v-else @click="closeWebSocket" class="main-button">
         Close websocket
       </button>
     </div>
@@ -76,7 +77,7 @@ export default {
     robotConfigAvailable: false,
     sdkVersion: null,
     lastWebSocketResponse: {},
-    appVersion: "0.2.0",
+    appVersion: "0.3.0",
     commitSha: "",
   }),
   mounted() {
@@ -192,5 +193,9 @@ export default {
 
 .server-input {
   min-width: 300px;
+}
+
+.main-button {
+  cursor: pointer;
 }
 </style>
