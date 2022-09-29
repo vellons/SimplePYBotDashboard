@@ -134,6 +134,7 @@ export default {
 
 button {
   cursor: pointer;
+  margin: 0 2px;
 }
 
 .infos {

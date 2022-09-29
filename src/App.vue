@@ -1,55 +1,70 @@
 <template>
   <div>
 
-    <SdkManagement
-        class="home-item"
+    <CollapsibleBlock
         v-if="!loadingRobotConfig && robotConfigAvailable"
-        :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
-        :version="sdkVersion" :webServerUrl="webServerUrl"/>
-    <ServomotorsGroup
-        class="home-item"
-        v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.motors" :config="robotConfig.motors"
-        :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []" :webServerUrl="webServerUrl"/>
-    <SensorsGroup
-        class="home-item"
-        v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.sensors" :config="robotConfig.sensors"
-        :sensorsStatus="lastWebSocketResponse.sensors ? lastWebSocketResponse.sensors : []"/>
-    <RobotActions
-        class="home-item"
-        v-if="!loadingRobotConfig && robotConfigAvailable" :webServerUrl="webServerUrl"
-        :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
+        id="motorsGroup" type="left-toggle" class="home-collapse">
+      <template #header>
+        <SdkManagement
+            style="margin-left: 15px"
+            v-if="!loadingRobotConfig && robotConfigAvailable"
+            :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
+            :version="sdkVersion" :webServerUrl="webServerUrl"/>
+      </template>
+      <template #default>
+        <ServomotorsGroup
+          v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.motors" :config="robotConfig.motors"
+          :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []" :webServerUrl="webServerUrl"/>
+      </template>
+    </CollapsibleBlock>
 
-    <div class="home-item">
-      <label for="web-server-url">Web server url: </label>
-      <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"
-             placeholder="Insert your robot web server address" :disabled="robotConfigAvailable"/>
-      <button v-if="!robotConfigAvailable" @click="connectToWebServer" :disabled="webServerUrl === ''"
-              class="main-button">
-        Connect to web server
-      </button>
-      <button v-else @click="closeDashboard" class="main-button">
-        Close dashboard
-      </button>
-      <br/>
-      <label for="web-socket-url">Websocket url: </label>
-      <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"
-             placeholder="Insert your robot websocket address" :disabled="webSocket !== null"/>
-      <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''" class="main-button">
-        Connect to websocket
-      </button>
-      <button v-else @click="closeWebSocket" class="main-button">
-        Close websocket
-      </button>
-    </div>
+    <CollapsibleBlock
+        v-if="!loadingRobotConfig && robotConfigAvailable"
+        id="robotActions" toggle-text="Sensors and Actions" class="home-collapse">
+      <SensorsGroup
+          style="margin-bottom: 15px"
+          v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.sensors" :config="robotConfig.sensors"
+          :sensorsStatus="lastWebSocketResponse.sensors ? lastWebSocketResponse.sensors : []"/>
+      <RobotActions
+          v-if="!loadingRobotConfig && robotConfigAvailable" :webServerUrl="webServerUrl"
+          :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
+    </CollapsibleBlock>
 
-    <div class="home-item" v-if="webSocket !== null">
-      {{ lastWebSocketResponse }}
-    </div>
+    <CollapsibleBlock
+        id="configurations" class="home-collapse"
+        :toggle-text="(!loadingRobotConfig && robotConfigAvailable) ? 'Configurations' : 'Dashboard for Simple Python Robot SDK'">
+      <div>
+        <label for="web-server-url">Web server url: </label>
+        <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"
+               placeholder="Insert your robot web server address" :disabled="robotConfigAvailable"/>
+        <button v-if="!robotConfigAvailable" @click="connectToWebServer" :disabled="webServerUrl === ''"
+                class="main-button">
+          Connect to web server
+        </button>
+        <button v-else @click="closeDashboard" class="main-button">
+          Close dashboard
+        </button>
+        <br/>
+        <label for="web-socket-url">Websocket url: </label>
+        <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"
+               placeholder="Insert your robot websocket address" :disabled="webSocket !== null"/>
+        <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''" class="main-button">
+          Connect to websocket
+        </button>
+        <button v-else @click="closeWebSocket" class="main-button">
+          Close websocket
+        </button>
+      </div>
 
-    <br>
-    <div class="home-item">
-      Version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
-    </div>
+      <div v-if="webSocket !== null">
+        {{ lastWebSocketResponse }}
+      </div>
+
+      <br>
+      <div>
+        Dashboard version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
+      </div>
+    </CollapsibleBlock>
 
   </div>
 </template>
@@ -59,10 +74,12 @@ import SdkManagement from "@/components/SdkManagement"
 import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
 import SensorsGroup from "@/components/SensorsGroup"
 import RobotActions from "@/components/RobotActions"
+import CollapsibleBlock from "@/components/CollapsibleBlock";
 
 export default {
   name: "App",
   components: {
+    CollapsibleBlock,
     SdkManagement,
     ServomotorsGroup,
     SensorsGroup,
@@ -77,7 +94,7 @@ export default {
     robotConfigAvailable: false,
     sdkVersion: null,
     lastWebSocketResponse: {},
-    appVersion: "0.3.0",
+    appVersion: "0.4.0",
     commitSha: "",
   }),
   mounted() {
@@ -105,7 +122,7 @@ export default {
             this.loadingRobotConfig = false
             this.$toast.success(this.robotConfig.name + " ready")
           }
-          localStorage.setItem('webServerUrl', this.webServerUrl)
+          localStorage.setItem("webServerUrl", this.webServerUrl)
         } else {
           this.$toast.error("Bad response from " + this.webServerUrl + "/configuration/" +
               " code " + response.status)
@@ -121,7 +138,7 @@ export default {
         console.log("Close old connection")
         this.webSocket.close()
       }
-      localStorage.setItem('webSocketUrl', this.webSocketUrl)
+      localStorage.setItem("webSocketUrl", this.webSocketUrl)
       this.webSocket = new WebSocket(this.webSocketUrl + "/")
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {
@@ -169,7 +186,7 @@ export default {
 
       if (this.$route.query.websocketurl) {
         this.webSocketUrl = this.$route.query.websocketurl
-      } else if (localStorage.getItem('webSocketUrl')) {
+      } else if (localStorage.getItem("webSocketUrl")) {
         this.webSocketUrl = localStorage.getItem("webSocketUrl")
       }
 
@@ -187,8 +204,8 @@ export default {
 </script>
 
 <style scoped>
-.home-item {
-  margin: 10px 15px;
+.home-collapse {
+  margin-bottom: 15px;
 }
 
 .server-input {
