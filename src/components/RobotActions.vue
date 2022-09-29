@@ -58,16 +58,16 @@ export default {
     }
   },
   data: () => ({
-    selectedPose: '',
+    selectedPose: "",
     poseSeconds: 0,
-    pointToPointMotors: '',
+    pointToPointMotors: "",
     pointToPointSeconds: 0,
     textAreaRows: 4,
     pending: false
   }),
   methods: {
     goToPose: function () {
-      if (this.poseSeconds === '') this.poseSeconds = 0
+      if (this.poseSeconds === "") this.poseSeconds = 0
       let pose = this.selectedPose
       this.selectedPose = ""
       this.pending = true
@@ -85,7 +85,7 @@ export default {
       })
     },
     movePointToPoint: function () {
-      if (this.pointToPointSeconds === '') this.pointToPointSeconds = 0
+      if (this.pointToPointSeconds === "") this.pointToPointSeconds = 0
       if (!this.isJsonString(this.pointToPointMotors)) {
         this.$toast.warning("Insert a valid JSON")
         return

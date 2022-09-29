@@ -3,14 +3,20 @@
 
     <div class="infos">
       <button :disabled="pending || parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValue"
-              @click="removeStep">-{{ stepValue }}
+              @click="removeStep(stepValue)">-{{ stepValue }}
+      </button>
+      <button :disabled="pending || parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValueSmall"
+              @click="removeStep(stepValueSmall)">-{{ stepValueSmall }}
       </button>
       <span class="info-title">{{ motorKey }}</span> | <span class="info-angle">{{ rangeGoalAngle }}</span>
-      <button :disabled="pending || parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + stepValue"
-              @click="addStep">+{{ stepValue }}
-      </button>
       <button v-if="config.angle_limit[0] <= 0 && config.angle_limit[1] >= 0"
               :disabled="pending || parseInt(rangeGoalAngle) === 0" @click="goToZero">0
+      </button>
+      <button :disabled="pending || parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + stepValueSmall"
+              @click="addStep(stepValueSmall)">+{{ stepValueSmall }}
+      </button>
+      <button :disabled="pending || parseInt(config.angle_limit[1]) < parseInt(rangeGoalAngle) + stepValue"
+              @click="addStep(stepValue)">+{{ stepValue }}
       </button>
     </div>
 
@@ -55,6 +61,7 @@ export default {
   data: () => ({
     rangeCurrentAngle: 0,
     rangeGoalAngle: 0,
+    stepValueSmall: 1,
     stepValue: 5,
     pending: false
   }),
@@ -84,12 +91,12 @@ export default {
       this.rangeGoalAngle = 0
       this.rangeGoalChanged()
     },
-    removeStep: function () {
-      this.rangeGoalAngle = parseInt(this.rangeGoalAngle) - this.stepValue
+    removeStep: function (value) {
+      this.rangeGoalAngle = parseInt(this.rangeGoalAngle) - value
       this.rangeGoalChanged()
     },
-    addStep: function () {
-      this.rangeGoalAngle = parseInt(this.rangeGoalAngle) + this.stepValue
+    addStep: function (value) {
+      this.rangeGoalAngle = parseInt(this.rangeGoalAngle) + value
       this.rangeGoalChanged()
     },
     goToMin: function () {
