@@ -2,11 +2,11 @@
   <div class="movements">
     <div class="left-area">
       <div class="area-group">
-        <div class="axis-label">X:</div>
+        <div class="axis-label">Joystick X:</div>
         <div class="axis-value">{{ joystickValue.x ? joystickValue.x : 0 }}</div>
       </div>
       <div class="area-group">
-        <div class="axis-label">Y:</div>
+        <div class="axis-label">Joystick Y:</div>
         <div class="axis-value">{{ joystickValue.y ? joystickValue.y : 0 }}</div>
       </div>
     </div>
@@ -48,12 +48,34 @@ export default {
   },
   data: () => ({
     joystick1: null,
-    joystickValue: {}
+    joystickValue: {},
+    pending: false
   }),
   methods: {
     change: function (val) {
       this.joystickValue = val
-      console.log(val)
+      this.pending = true
+      let data = {
+        "linear": {
+          "x": this.joystickValue.x,
+          "y": this.joystickValue.y,
+          "z": 0.0
+        },
+        "angular": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        }
+      }
+      this.axios.post(this.webServerUrl + "/twist/", data).then((response) => {
+        if (response.status !== 200) {
+          this.$toast.error("Failed to send twist. Bad response")
+        }
+        this.pending = false
+      }).catch(() => {
+        this.$toast.error("Failed to send twist")
+        this.pending = false
+      })
     }
   }
 }
