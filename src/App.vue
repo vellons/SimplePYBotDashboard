@@ -32,6 +32,15 @@
     </CollapsibleBlock>
 
     <CollapsibleBlock
+        v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.enable_twist_controller === true"
+        id="movements" toggle-text="Ground movements" class="home-collapse">
+      <GroundMovements
+          v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.enable_twist_controller === true"
+          :config="{}" :twistStatus="lastWebSocketResponse.twist ? lastWebSocketResponse.twist : {}"
+          :webServerUrl="webServerUrl"/>
+    </CollapsibleBlock>
+
+    <CollapsibleBlock
         id="configurations" class="home-collapse"
         :toggle-text="(!loadingRobotConfig && robotConfigAvailable) ? 'Configurations' : 'Dashboard for Simple Python Robot SDK'">
       <div>
@@ -76,7 +85,8 @@ import SdkManagement from "@/components/SdkManagement"
 import ServomotorsGroup from "@/components/ServomotorsGroup.vue"
 import SensorsGroup from "@/components/SensorsGroup"
 import RobotActions from "@/components/RobotActions"
-import CollapsibleBlock from "@/components/CollapsibleBlock";
+import CollapsibleBlock from "@/components/CollapsibleBlock"
+import GroundMovements from "@/components/movements/GroundMovements"
 
 export default {
   name: "App",
@@ -85,7 +95,8 @@ export default {
     SdkManagement,
     ServomotorsGroup,
     SensorsGroup,
-    RobotActions
+    RobotActions,
+    GroundMovements
   },
   data: () => ({
     webServerUrl: "",
