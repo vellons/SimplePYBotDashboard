@@ -13,8 +13,9 @@
       </template>
       <template #default>
         <ServomotorsGroup
-          v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.motors" :config="robotConfig.motors"
-          :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []" :webServerUrl="webServerUrl"/>
+            v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.motors" :config="robotConfig.motors"
+            :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"
+            :webServerUrl="webServerUrl"/>
       </template>
     </CollapsibleBlock>
 
@@ -34,7 +35,7 @@
         id="configurations" class="home-collapse"
         :toggle-text="(!loadingRobotConfig && robotConfigAvailable) ? 'Configurations' : 'Dashboard for Simple Python Robot SDK'">
       <div>
-        <label for="web-server-url">Web server url: </label>
+        <label for="web-server-url" class="server-label">Web server url:</label>
         <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"
                placeholder="Insert your robot web server address" :disabled="robotConfigAvailable"/>
         <button v-if="!robotConfigAvailable" @click="connectToWebServer" :disabled="webServerUrl === ''"
@@ -45,10 +46,11 @@
           Close dashboard
         </button>
         <br/>
-        <label for="web-socket-url">Websocket url: </label>
+        <label for="web-socket-url" class="server-label">Websocket url:</label>
         <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"
                placeholder="Insert your robot websocket address" :disabled="webSocket !== null"/>
-        <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''" class="main-button">
+        <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''"
+                class="main-button">
           Connect to websocket
         </button>
         <button v-else @click="closeWebSocket" class="main-button">
@@ -61,7 +63,7 @@
       </div>
 
       <br>
-      <div>
+      <div class="version-label">
         Dashboard version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
       </div>
     </CollapsibleBlock>
@@ -205,14 +207,27 @@ export default {
 
 <style scoped>
 .home-collapse {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+}
+
+.server-label {
+  min-width: 110px;
+  display: inline-block;
+  font-weight: bold;
 }
 
 .server-input {
   min-width: 300px;
+  margin: 5px 2px;
 }
 
 .main-button {
   cursor: pointer;
+  margin: 2px;
+}
+
+.version-label {
+  font-size: 14px;
+  font-style: italic;
 }
 </style>

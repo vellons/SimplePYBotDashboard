@@ -4,7 +4,7 @@
     <div v-if="robotConfig.poses" class="robot-actions-item robot-poses">
       <div class="robot-actions-item-title">Poses:</div>
       <label>
-        <select v-model="selectedPose">
+        <select v-model="selectedPose" style="min-width: 200px">
           <option disabled value="">Poses</option>
           <option v-for="(pose, name) in robotConfig.poses" :key="name" :value="name">{{ name }}</option>
         </select>
@@ -149,14 +149,17 @@ export default {
 
 .robot-actions-input {
   width: 50px;
+  margin: 0 2px;
 }
 
 .motors-text-area {
   min-width: 250px;
   min-height: 40px;
+  margin: 0 2px;
 }
 
 button {
   cursor: pointer;
+  margin: 0 2px;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="collapsible-block">
-    <input :id="id" class="toggle" type="checkbox" checked>
+    <input :id="id" class="toggle" type="checkbox" :checked="checked">
     <label v-if="type === 'lbl-toggle-text'" :for="id" class="lbl-toggle" :class="[type]"> {{ toggleText }} </label>
     <label v-if="type === 'left-toggle'" :for="id" class="lbl-toggle" :class="[type]">
       <slot name="header"/>
@@ -20,6 +20,10 @@ export default {
     id: {
       type: String,
       required: true
+    },
+    checked: {
+      type: Boolean,
+      default: true
     },
     type: {
       type: String,
@@ -41,34 +45,40 @@ input[type='checkbox'] {
 
 .lbl-toggle-text {
   display: block;
-  font-weight: bold;
-  font-family: monospace;
-  font-size: 1.0rem;
-  text-transform: uppercase;
-  text-align: center;
-  color: #A77B0E;
   background: #FAE042;
   padding: 7px;
   cursor: pointer;
   border-radius: 7px;
   transition: all 0.25s ease-out;
   min-height: 20px;
+
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 16px;
+  text-transform: uppercase;
+  text-align: center;
+  color: #A77B0E;
 }
 
 .left-toggle {
   display: block;
   background: #FAE042;
-  padding-left: 7px;
+  padding: 10px 0 10px 7px;
   border-radius: 7px;
   transition: all 0.25s ease-out;
   min-height: 20px;
+
+  font-weight: bold;
+  font-family: monospace;
+  font-size: 16px;
+  color: #A77B0E;
 }
 
-.lbl-toggle-text:hover {
+.lbl-toggle:hover {
   color: #7C5A0B;
 }
 
-.lbl-toggle::before {
+.lbl-toggle-text::before {
   content: ' ';
   display: inline-block;
   border-top: 5px solid transparent;
@@ -77,6 +87,19 @@ input[type='checkbox'] {
   vertical-align: middle;
   margin-right: 8px;
   position: relative;
+  transform: translateY(-2px);
+  transition: transform .2s ease-out;
+}
+
+.left-toggle::before {
+  content: ' ';
+  display: inline-block;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 5px solid currentColor;
+  margin-left: 3px;
+  position: absolute;
+  top: 16px;
   transform: translateY(-2px);
   transition: transform .2s ease-out;
 }
@@ -101,7 +124,7 @@ input[type='checkbox'] {
 }
 
 .collapsible-content .content-inner {
-  background: rgba(250, 224, 66, .2);
+  background: rgba(250, 224, 66, 0.12);
   border-bottom: 1px solid rgba(250, 224, 66, .45);
   border-bottom-left-radius: 7px;
   border-bottom-right-radius: 7px;
