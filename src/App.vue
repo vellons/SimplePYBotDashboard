@@ -107,7 +107,7 @@ export default {
     robotConfigAvailable: false,
     sdkVersion: null,
     lastWebSocketResponse: {},
-    appVersion: "0.4.0",
+    appVersion: "0.4.1",
     commitSha: "",
   }),
   mounted() {

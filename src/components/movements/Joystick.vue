@@ -2,9 +2,9 @@
   <div :id="'joystick_' + idx">
     <!--div style="color: red;">x={{ lastValue.x }} y={{ lastValue.y }}</div-->
     <div style="width: 128px; position: relative;">
-      <img src="/images/joystick-base.png" alt=""/>
+      <img src="images/joystick-base.png" alt=""/>
       <div :id="idx + '_stick'" style="position: absolute; left:32px; top:32px;">
-        <img src="/images/joystick-red.png" alt=""/>
+        <img src="images/joystick-red.png" alt=""/>
       </div>
     </div>
   </div>
