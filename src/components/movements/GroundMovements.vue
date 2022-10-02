@@ -9,6 +9,10 @@
         <div class="axis-label">Joystick Y:</div>
         <div class="axis-value">{{ joystickValue.y ? joystickValue.y : 0 }}</div>
       </div>
+      <div class="area-group">
+        <div class="axis-label">Orientation Z:</div>
+        <div class="axis-value">{{ zValue }}</div>
+      </div>
     </div>
     <Joystick class="joystick-container" idx="controller1" @change="change"/>
     <div class="right-area data-area">
@@ -49,9 +53,44 @@ export default {
   data: () => ({
     joystick1: null,
     joystickValue: {},
-    pending: false
+    zValue: 0,
+    pending: false,
+    keysDown: []
   }),
+  mounted() {
+    this.setKeyboardListener()
+    this.syncControllers()
+  },
   methods: {
+    setKeyboardListener: function () {
+      window.addEventListener("keydown", (e) => { // Save all key pressed
+        let index = this.keysDown.indexOf(e.key.toLowerCase())
+        if (index === -1) {
+          this.keysDown.push(e.key.toLowerCase())
+          this.calcJoystickWithKeys()
+        }
+      })
+      window.addEventListener("keyup", (e) => { // Remove all key relased
+        let index = this.keysDown.indexOf(e.key.toLowerCase())
+        if (index !== -1) {
+          this.keysDown.splice(index, 1)
+          this.calcJoystickWithKeys()
+        }
+      });
+    },
+    calcJoystickWithKeys: function () {
+      let newJoystick = {x: 0, y: 0}
+      this.keysDown.forEach((key) => {
+        if (key === 'a') newJoystick.x = -1
+        if (key === 's') newJoystick.y = -1
+        if (key === 'd') newJoystick.x = 1
+        if (key === 'w') newJoystick.y = 1
+        if (key === 'z') this.zValue = (this.zValue - 1) % 360
+        if (key === 'x') this.zValue = (this.zValue + 1) % 360
+        if (this.zValue < 0) this.zValue = 360 + this.zValue
+      })
+      this.change(newJoystick)
+    },
     change: function (val) {
       this.joystickValue = val
       this.pending = true
@@ -64,7 +103,7 @@ export default {
         "angular": {
           "x": 0.0,
           "y": 0.0,
-          "z": 0.0
+          "z": this.zValue
         }
       }
       this.axios.post(this.webServerUrl + "/twist/", data).then((response) => {
@@ -76,6 +115,16 @@ export default {
         this.$toast.error("Failed to send twist")
         this.pending = false
       })
+    },
+    syncControllers: function () {
+      if (this.twistStatus?.angular?.z && this.keysDown.length === 0) {
+        this.zValue = this.twistStatus?.angular?.z
+      }
+    }
+  },
+  watch: {
+    twistStatus: function () {
+      this.syncControllers()
     }
   }
 }
@@ -103,11 +152,12 @@ export default {
 .area-group {
   display: flex;
   flex-direction: row;
-  padding: 22px 0;
+  padding: 12px 0;
 }
 
 .axis-label {
   font-weight: bold;
+  width: 100px;
 }
 
 .axis-value {

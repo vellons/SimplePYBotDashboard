@@ -132,7 +132,7 @@ export default {
   }),
   mounted() {
     console.log("Joystick " + this.idx + " mounted")
-    this.joystick1 = new JoystickController(this.idx + "_stick", 52, 8)
+    this.joystick1 = new JoystickController(this.idx + "_stick", 52, 3)
     this.lastValue = this.joystick1.value
     this.value = this.lastValue
     this.joystickLoop()

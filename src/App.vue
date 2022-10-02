@@ -37,7 +37,7 @@
     </CollapsibleBlock>
 
     <CollapsibleBlock
-        v-if="!loadingRobotConfig && robotConfigAvailable"
+        v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.sensors"
         id="sensors" toggle-text="Sensors" class="home-collapse">
       <SensorsGroup
           v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.sensors" :config="robotConfig.sensors"
