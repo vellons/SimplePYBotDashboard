@@ -6,6 +6,7 @@
         id="motorsGroup" type="left-toggle" class="home-collapse">
       <template #header>
         <SdkManagement
+            style="margin-left: 15px"
             v-if="!loadingRobotConfig && robotConfigAvailable"
             :robotConfig="robotConfig" :robotStatus="lastWebSocketStatus ? lastWebSocketStatus : {}"
             :version="sdkVersion" :webServerUrl="webServerUrl"/>
