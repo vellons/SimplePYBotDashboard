@@ -12,7 +12,7 @@ app.use(VueAxios, axios)
 
 const routes = [
     {
-        path: "/",
+        path: "/SimplePYBotDashboard/",
         name: "App",
         component: App,
     }

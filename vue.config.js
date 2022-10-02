@@ -1,5 +1,5 @@
 module.exports = {
-    publicPath: process.env.NODE_ENV === "production" ? "/SimplePYBotDashboard/" : "/",
+    publicPath: "/SimplePYBotDashboard/",
     devServer: {
         proxy: {
             '^/api': {
