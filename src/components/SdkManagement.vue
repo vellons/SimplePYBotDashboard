@@ -12,7 +12,6 @@
       <span v-if="robotStatus.system?.temperature">{{ robotStatus.system?.temperature + '°C - ' }}</span>
       <span v-if="robotStatus.system?.timestamp">(Delay:{{ statusDelay }} sec) - {{ formattedDate }}</span>
       <span v-else>Connect with websocket to receive realtime data</span>
-      <span v-if="version"><i>{{ ' - ' + version }}</i></span>
     </div>
   </div>
 </template>

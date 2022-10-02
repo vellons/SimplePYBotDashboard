@@ -1,12 +1,12 @@
 <template>
   <div class="robot-actions">
 
-    <div v-if="robotConfig.poses" class="robot-actions-item robot-poses">
+    <div v-if="motionConfig.poses" class="robot-actions-item robot-poses">
       <div class="robot-actions-item-title">Poses:</div>
       <label>
         <select v-model="selectedPose" style="min-width: 200px">
           <option disabled value="">Poses</option>
-          <option v-for="(pose, name) in robotConfig.poses" :key="name" :value="name">{{ name }}</option>
+          <option v-for="(pose, name) in motionConfig.poses" :key="name" :value="name">{{ name }}</option>
         </select>
       </label>
       <label>
@@ -58,6 +58,7 @@ export default {
     }
   },
   data: () => ({
+    motionConfig: {},
     selectedPose: "",
     poseSeconds: 0,
     pointToPointMotors: "",
@@ -65,7 +66,23 @@ export default {
     textAreaRows: 4,
     pending: false
   }),
+  mounted() {
+    this.getMotionInfo()
+  },
   methods: {
+    getMotionInfo: function () {
+      if (this.robotConfig.poses) {
+        this.motionConfig.poses = this.robotConfig.poses // For old sdk versions
+      }
+      this.axios.get(this.webServerUrl + "/motion/").then((response) => {
+        if (response.status === 200) {
+          this.motionConfig = response.data
+        } else {
+          this.$toast.error("Bad response from " + this.webServerUrl + "/motion/. Code " + response.status)
+        }
+      }).catch(() => {
+      })
+    },
     goToPose: function () {
       if (this.poseSeconds === "") this.poseSeconds = 0
       let pose = this.selectedPose

@@ -6,29 +6,24 @@
         id="motorsGroup" type="left-toggle" class="home-collapse">
       <template #header>
         <SdkManagement
-            style="margin-left: 15px"
             v-if="!loadingRobotConfig && robotConfigAvailable"
-            :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"
+            :robotConfig="robotConfig" :robotStatus="lastWebSocketStatus ? lastWebSocketStatus : {}"
             :version="sdkVersion" :webServerUrl="webServerUrl"/>
       </template>
       <template #default>
         <ServomotorsGroup
             v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.motors" :config="robotConfig.motors"
-            :motorStatus="lastWebSocketResponse.motors ? lastWebSocketResponse.motors : []"
+            :motorStatus="lastWebSocketStatus.motors ? lastWebSocketStatus.motors : []"
             :webServerUrl="webServerUrl"/>
       </template>
     </CollapsibleBlock>
 
     <CollapsibleBlock
         v-if="!loadingRobotConfig && robotConfigAvailable"
-        id="robotActions" toggle-text="Sensors and Actions" class="home-collapse">
-      <SensorsGroup
-          style="margin-bottom: 15px"
-          v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.sensors" :config="robotConfig.sensors"
-          :sensorsStatus="lastWebSocketResponse.sensors ? lastWebSocketResponse.sensors : []"/>
+        id="robotActions" toggle-text="Actions and Motion" class="home-collapse">
       <RobotActions
           v-if="!loadingRobotConfig && robotConfigAvailable" :webServerUrl="webServerUrl"
-          :robotConfig="robotConfig" :robotStatus="lastWebSocketResponse ? lastWebSocketResponse : {}"/>
+          :robotConfig="robotConfig" :robotStatus="lastWebSocketStatus ? lastWebSocketStatus : {}"/>
     </CollapsibleBlock>
 
     <CollapsibleBlock
@@ -36,8 +31,16 @@
         id="movements" toggle-text="Ground movements" class="home-collapse">
       <GroundMovements
           v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.enable_twist_controller === true"
-          :config="{}" :twistStatus="lastWebSocketResponse.twist ? lastWebSocketResponse.twist : {}"
+          :config="{}" :twistStatus="lastWebSocketStatus.twist ? lastWebSocketStatus.twist : {}"
           :webServerUrl="webServerUrl"/>
+    </CollapsibleBlock>
+
+    <CollapsibleBlock
+        v-if="!loadingRobotConfig && robotConfigAvailable"
+        id="sensors" toggle-text="Sensors" class="home-collapse">
+      <SensorsGroup
+          v-if="!loadingRobotConfig && robotConfigAvailable && robotConfig.sensors" :config="robotConfig.sensors"
+          :sensorsStatus="lastWebSocketStatus.sensors ? lastWebSocketStatus.sensors : []"/>
     </CollapsibleBlock>
 
     <CollapsibleBlock
@@ -68,12 +71,16 @@
       </div>
 
       <div v-if="webSocket !== null">
-        {{ lastWebSocketResponse }}
+        {{ lastWebSocketStatus }}
       </div>
 
       <br>
       <div class="version-label">
         Dashboard version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
+      </div>
+      <br>
+      <div v-if="sdkVersion" class="version-label">
+        SDK version: {{ sdkVersion }}
       </div>
     </CollapsibleBlock>
 
@@ -106,8 +113,8 @@ export default {
     robotConfig: {},
     robotConfigAvailable: false,
     sdkVersion: null,
-    lastWebSocketResponse: {},
-    appVersion: "0.4.1",
+    lastWebSocketStatus: {},
+    appVersion: "0.5.0",
     commitSha: "",
   }),
   mounted() {
@@ -120,7 +127,7 @@ export default {
     connectToWebServer: async function () {
       this.loadingRobotConfig = true
       this.robotConfigAvailable = false
-      this.lastWebSocketResponse = {}
+      this.lastWebSocketStatus = {}
       this.robotConfig = {}
       this.axios.get(this.webServerUrl + "/configuration/").then((response) => {
         if (response.status === 200) {
@@ -131,9 +138,11 @@ export default {
           if (Object.keys(this.robotConfig).length > 0) {
             this.robotConfigAvailable = true
           }
-          if (this.robotConfig.id) {
+          if (this.robotConfig.id && this.robotConfig.name) {
             this.loadingRobotConfig = false
             this.$toast.success(this.robotConfig.name + " ready")
+          } else {
+            this.$toast.warning("Bad robot configuration")
           }
           localStorage.setItem("webServerUrl", this.webServerUrl)
         } else {
@@ -146,13 +155,16 @@ export default {
     },
     connectToWebSocket: function () {
       let _this = this
-      this.lastWebSocketResponse = {}
+      this.lastWebSocketStatus = {}
       if (this.webSocket) {
         console.log("Close old connection")
-        this.webSocket.close()
+        this.$webSocket.close()
+        this.webSocket = null
       }
       localStorage.setItem("webSocketUrl", this.webSocketUrl)
-      this.webSocket = new WebSocket(this.webSocketUrl + "/")
+      this.$webSocket.init(this.webSocketUrl + "/") // $webSocket defined in main.js
+      this.webSocket = this.$webSocket.getInstance()
+      console.log("Web socket initialized")
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {
           let reader = new FileReader()
@@ -165,16 +177,18 @@ export default {
         }
       }
       this.webSocket.onerror = () => {
+        this.$webSocket.close()
         this.$toast.warning("Websocket connection error")
         this.webSocket = null
       }
       this.webSocket.onclose = () => {
+        this.$webSocket.close()
         this.$toast.warning("Websocket connection closed")
         this.webSocket = null
       }
     },
     closeWebSocket: function () {
-      this.webSocket.close()
+      this.$webSocket.close()
       this.$toast.warning("Websocket connection closed")
       this.webSocket = null
       this.onWebSocketMessage({})
@@ -182,13 +196,14 @@ export default {
     closeDashboard: function () {
       this.loadingRobotConfig = true
       this.robotConfigAvailable = false
-      this.lastWebSocketResponse = {}
+      this.lastWebSocketStatus = {}
       this.robotConfig = {}
       this.loadingRobotConfig = false
       this.$toast.warning("Dashboard closed")
     },
     onWebSocketMessage: function (obj) {
-      this.lastWebSocketResponse = obj
+      this.lastWebSocketStatus = obj
+      this.$robotStatus.set(JSON.parse(JSON.stringify(this.lastWebSocketStatus))) // $robotStatus defined in main.js to access everywhere
     },
     readQueryConf: function () {
       if (this.$route.query.webserverurl) {
