@@ -23,16 +23,18 @@
       <label>
         <textarea v-model="pointToPointMotors" :rows="textAreaRows" cols="40" class="motors-text-area"></textarea>
       </label>
-      <label>
-        <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
-               type="number" min="0" max="120" placeholder="seconds"/>
-      </label>
-      <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" style="height: 22px" :disabled="pending">
-        Move point to point in {{ pointToPointSeconds }} seconds
-      </button>
-      <button @click="copyCurrentPosition" style="height: 22px" :disabled="pending">
-        Copy current position
-      </button>
+      <div>
+        <label>
+          <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
+                 type="number" min="0" max="120" placeholder="seconds"/>
+        </label>
+        <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" :disabled="pending">
+          Move point to point in {{ pointToPointSeconds }} seconds
+        </button>
+        <button @click="copyCurrentPosition" :disabled="pending">
+          Copy current position
+        </button>
+      </div>
     </div>
 
   </div>
