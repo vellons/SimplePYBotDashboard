@@ -64,13 +64,15 @@ export default {
   methods: {
     setKeyboardListener: function () {
       window.addEventListener("keydown", (e) => { // Save all key pressed
-        let index = this.keysDown.indexOf(e.key.toLowerCase())
+        let key = e.key.toLowerCase()
+        if (key !== 'a' && key !== 's' && key !== 'd' && key !== 'w' && key !== 'z' && key !== 'x') return
+        let index = this.keysDown.indexOf(key)
         if (index === -1) {
           this.keysDown.push(e.key.toLowerCase())
           this.calcJoystickWithKeys()
         }
       })
-      window.addEventListener("keyup", (e) => { // Remove all key relased
+      window.addEventListener("keyup", (e) => { // Remove all key released
         let index = this.keysDown.indexOf(e.key.toLowerCase())
         if (index !== -1) {
           this.keysDown.splice(index, 1)
