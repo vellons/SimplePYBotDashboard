@@ -74,6 +74,27 @@ export default {
       this.pending = true
       let newAngle = parseInt(this.rangeGoalAngle)
       console.log(this.motorKey, newAngle)
+
+      // Send trow websocket if parser is supported
+      if (this.$robotConfig.get()["enable_parser_json_commands"] && this.$webSocket.isOpen()) {
+        let socketBody = {
+          "type": "C2R",  // Client to Robot
+          "data": {
+            "area": "motors",
+            "commands": [
+              {
+                "key": this.motorKey,
+                "action": "set_goal_angle",
+                "goal_angle": newAngle
+              }
+            ]
+          }
+        }
+        this.$webSocket.send(socketBody)
+        this.pending = false
+        return
+      }
+
       let data = {
         "goal_angle": newAngle
       }

@@ -115,7 +115,7 @@ export default {
     robotConfigAvailable: false,
     sdkVersion: null,
     lastWebSocketStatus: {},
-    appVersion: "0.5.0",
+    appVersion: "0.6.0",
     commitSha: "",
   }),
   mounted() {
@@ -130,9 +130,11 @@ export default {
       this.robotConfigAvailable = false
       this.lastWebSocketStatus = {}
       this.robotConfig = {}
+      this.$robotConfig.set({})
       this.axios.get(this.webServerUrl + "/configuration/").then((response) => {
         if (response.status === 200) {
           this.robotConfig = response.data
+          this.$robotConfig.set(this.robotConfig)
           if (response.headers.simplepybotsdk) {
             this.sdkVersion = response.headers.simplepybotsdk
           }
@@ -199,10 +201,18 @@ export default {
       this.robotConfigAvailable = false
       this.lastWebSocketStatus = {}
       this.robotConfig = {}
+      this.$robotConfig.set({})
       this.loadingRobotConfig = false
       this.$toast.warning("Dashboard closed")
     },
     onWebSocketMessage: function (obj) {
+      if (obj.type === "R2C" && obj.data && obj.data.area === "status" && obj.data.action === "live_status" && obj.data.value) {
+        obj = obj.data.value
+      }
+      if (!obj.format) {
+        console.warn("Socket message not a robot status")
+        return
+      }
       this.lastWebSocketStatus = obj
       this.$robotStatus.set(JSON.parse(JSON.stringify(this.lastWebSocketStatus))) // $robotStatus defined in main.js to access everywhere
     },

@@ -121,7 +121,7 @@ export default {
     },
     refreshInterval: {
       type: Number,
-      default: 333
+      default: 250
     }
   },
   data: () => ({

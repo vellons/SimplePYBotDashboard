@@ -27,6 +27,23 @@ app.use(Toaster, {
     position: 'top-right'
 })
 
+// $robotConfig global
+app.use({
+    // Global variable - https://jsfiddle.net/ej29zxmf/1/
+    install(app) {
+        let config = ref(null)
+        app.config.globalProperties.$robotConfig = {
+            value: config,
+            set(newValue) {
+                config.value = newValue
+            },
+            get() {
+                return config.value
+            }
+        };
+    }
+})
+
 // $webSocket global
 app.use({
     install(app) {
@@ -48,12 +65,12 @@ app.use({
             getInstance() {
                 return ws.value
             },
-            send(message) {
+            async send(message) {
                 if (!this.isOpen()) {
                     console.warn("Websocket is closed")
                     return
                 }
-                ws.value.send(new TextEncoder().encode(JSON.stringify(message)))
+                await ws.value.send(new TextEncoder().encode(JSON.stringify(message)))
             }
         };
     }
@@ -61,7 +78,6 @@ app.use({
 
 // $robotStatus global
 app.use({
-    // Global variable - https://jsfiddle.net/ej29zxmf/1/
     install(app) {
         let status = ref(null)
         app.config.globalProperties.$robotStatus = {

@@ -108,6 +108,21 @@ export default {
           "z": this.zValue
         }
       }
+
+      // Send through websocket if parser is supported
+      if (this.$robotConfig.get()["enable_parser_json_commands"] && this.$webSocket.isOpen()) {
+        let socketBody = {
+          "type": "C2R",  // Client to Robot
+          "data": {
+            "area": "twist",
+            "go": data
+          }
+        }
+        this.$webSocket.send(socketBody)
+        this.pending = false
+        return
+      }
+
       this.axios.post(this.webServerUrl + "/twist/", data).then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to send twist. Bad response")
