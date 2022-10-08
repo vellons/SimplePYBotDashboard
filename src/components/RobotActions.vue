@@ -10,8 +10,8 @@
         </select>
       </label>
       <label>
-        <input v-if="selectedPose !== ''" v-model="poseSeconds" class="robot-actions-input"
-               type="number" min="0" max="120" placeholder="seconds"/>
+        <input v-if="selectedPose !== ''" v-model="poseSeconds" class="robot-actions-input" type="number" min="0"
+          max="120" placeholder="seconds" />
       </label>
       <button v-if="selectedPose !== ''" @click="goToPose" :disabled="pending">
         Go to {{ selectedPose }} in {{ poseSeconds }} seconds
@@ -26,13 +26,16 @@
       <div>
         <label>
           <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
-                 type="number" min="0" max="120" placeholder="seconds"/>
+            type="number" min="0" max="120" placeholder="seconds" />
         </label>
         <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" :disabled="pending">
           Move point to point in {{ pointToPointSeconds }} seconds
         </button>
         <button @click="copyCurrentPosition" :disabled="pending">
           Copy current position
+        </button>
+        <button v-if="pointToPointMotors !== ''" @click="saveCurrentPosition" :disabled="pending">
+          Save current position
         </button>
       </div>
     </div>
@@ -41,7 +44,7 @@
 </template>
 
 <script>
-import {toRaw} from "@vue/reactivity"
+import { toRaw } from "@vue/reactivity"
 
 export default {
   name: "RobotActions",
@@ -138,6 +141,31 @@ export default {
         this.textAreaRows++
       }
       this.pointToPointMotors = JSON.stringify(result, null, 2)
+    },
+    saveCurrentPosition: function () {
+      let data = {}
+      try {
+        data = JSON.parse(this.pointToPointMotors)
+      } catch (e) {
+        this.$toast.warning("Insert a valid JSON")
+        return
+      }
+      let name = prompt("Please enter the name of the position", "position")
+      if (name === null || name === "") {
+        return
+      }
+      this.axios.post(this.webServerUrl + "/poses/" + name + "/", data).then((response) => {
+        if (response.status !== 200) {
+          this.$toast.error("Failed to save current position. Bad response")
+        } else {
+          this.$toast.success("Saved current position")
+        }
+        this.pending = false
+        this.getMotionInfo()
+      }).catch(() => {
+        this.$toast.error("Failed to save current position")
+        this.pending = false
+      })
     },
     isJsonString: function (str) {
       try {
