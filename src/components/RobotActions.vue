@@ -4,24 +4,26 @@
     <div v-if="motionConfig.poses" class="robot-actions-item robot-poses">
       <div class="robot-actions-item-title">Poses:</div>
       <label>
-        <select v-model="selectedPose" style="min-width: 200px">
-          <option disabled value="">Poses</option>
+        <select @change="changePtoPValues"  v-model="selectedPose" style="min-width: 200px">
+          <option disabled value="no_pose">Poses</option>
+          <option value="new_pose">--- New Pose ---</option>"
           <option v-for="(pose, name) in motionConfig.poses" :key="name" :value="name">{{ name }}</option>
         </select>
       </label>
       <label>
-        <input v-if="selectedPose !== ''" v-model="poseSeconds" class="robot-actions-input" type="number" min="0"
-          max="120" placeholder="seconds" />
+        <input v-if="selectedPose === 'new_pose'" type="text" v-model="newPoseName" placeholder="New Pose Name" />
       </label>
-      <button v-if="selectedPose !== ''" @click="goToPose" :disabled="pending">
-        Go to {{ selectedPose }} in {{ poseSeconds }} seconds
-      </button>
+      <button v-if="selectedPose !== 'new_pose' && selectedPose !== 'no_pose' && selectedPose !== ''" @click="deletePose(selectedPose)">Delete</button>
     </div>
 
     <div class="robot-actions-item">
       <div class="robot-actions-item-title">Point to point:</div>
       <label>
-        <textarea v-model="pointToPointMotors" :rows="textAreaRows" cols="40" class="motors-text-area"></textarea>
+        <div v-for="(motor, key) in robotConfig.motors" :key="key">
+          <span>{{(pointToPointMotors[key]) ? pointToPointMotors[key] : 0}}</span>
+          <input type="checkbox" :id="key" v-model="motor.enabled" />
+          <label :for="key">{{ motor.id }}</label>
+        </div>
       </label>
       <div>
         <label>
@@ -108,14 +110,10 @@ export default {
     },
     movePointToPoint: function () {
       if (this.pointToPointSeconds === "") this.pointToPointSeconds = 0
-      if (!this.isJsonString(this.pointToPointMotors)) {
-        this.$toast.warning("Insert a valid JSON")
-        return
-      }
       this.pending = true
       let data = {
         "seconds": parseFloat(this.pointToPointSeconds),
-        ...JSON.parse(this.pointToPointMotors)
+        ...JSON.parse(JSON.stringify(this.pointToPointMotors, null, 2))
       }
       this.axios.post(this.webServerUrl + "/move-point-to-point/", data).then((response) => {
         if (response.status !== 200) {
@@ -140,18 +138,22 @@ export default {
         }
         this.textAreaRows++
       }
-      this.pointToPointMotors = JSON.stringify(result, null, 2)
+      // this.pointToPointMotors = JSON.stringify(result, null, 2)
+      this.pointToPointMotors = result
     },
     saveCurrentPosition: function () {
       let data = {}
       try {
-        data = JSON.parse(this.pointToPointMotors)
+        data = JSON.parse(JSON.stringify(this.pointToPointMotors, null, 2))
       } catch (e) {
         this.$toast.warning("Insert a valid JSON")
         return
       }
-      let name = prompt("Please enter the name of the position", "position")
-      if (name === null || name === "") {
+      // Name from v-model newPoseName value
+      let name = this.newPoseName
+
+      if (name === "") {
+        this.$toast.warning("Insert a valid name")
         return
       }
       this.axios.post(this.webServerUrl + "/poses/" + name + "/", data).then((response) => {
@@ -159,11 +161,41 @@ export default {
           this.$toast.error("Failed to save current position. Bad response")
         } else {
           this.$toast.success("Saved current position")
+          this.selectedPose = name
+
         }
         this.pending = false
         this.getMotionInfo()
       }).catch(() => {
         this.$toast.error("Failed to save current position")
+        this.pending = false
+      })
+    },
+    changePtoPValues: function () {
+      //Get motors values from selected position
+      if(this.selectedPose === "" || this.selectedPose === "new_pose") return
+      let pose = this.selectedPose
+      let motors = this.motionConfig.poses[pose]
+      this.pointToPointMotors = motors
+
+      //Set motors values to pointToPointMotors
+      for (let [key] of Object.entries(motors)) {
+        this.pointToPointMotors[key] = motors[key]
+      }
+    },
+    deletePose: function () {
+      let pose = this.selectedPose
+      this.axios.delete(this.webServerUrl + "/poses/" + pose + "/").then((response) => {
+        if (response.status !== 200) {
+          this.$toast.error("Failed to delete pose " + pose + ". Bad response")
+        } else {
+          this.$toast.success("Deleted pose " + pose)
+        }
+        this.pending = false
+        this.getMotionInfo()
+        this.selectedPose = ""
+      }).catch(() => {
+        this.$toast.error("Failed to delete pose " + pose)
         this.pending = false
       })
     },
