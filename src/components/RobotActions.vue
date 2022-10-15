@@ -21,9 +21,12 @@
       <label>
         <div v-for="(motor, key) in robotConfig.motors" :key="key">
           <span>{{(pointToPointMotors[key]) ? pointToPointMotors[key] : 0}}</span>
-          <input type="checkbox" :id="key" v-model="motor.enabled" />
-          <label :for="key">{{ motor.id }}</label>
+          <!-- :checked="true" -->
+          <input type="checkbox" :id="key" v-model="motor.enabled"/>
+          <label :for="key">{{ key }}</label>
         </div>
+        <!-- Check all button -->
+        <button @click="enableAllMotors">Check all</button> <button @click="disableAllMotors">Uncheck all</button>
       </label>
       <div>
         <label>
@@ -36,7 +39,7 @@
         <button @click="copyCurrentPosition" :disabled="pending">
           Copy current position
         </button>
-        <button v-if="pointToPointMotors !== ''" @click="saveCurrentPosition" :disabled="pending">
+        <button v-if="pointToPointMotors !== '' && selectedPose !== ''" @click="saveCurrentPosition" :disabled="pending">
           Save current position
         </button>
       </div>
@@ -144,7 +147,14 @@ export default {
     saveCurrentPosition: function () {
       let data = {}
       try {
-        data = JSON.parse(JSON.stringify(this.pointToPointMotors, null, 2))
+        //Select from point to point motors only the enabled motors
+        for (let [key, value] of Object.entries(this.pointToPointMotors)) {
+          if (this.robotConfig.motors[key].enabled) {
+            data[key] = value
+          }
+        }
+        data = JSON.parse(JSON.stringify(data, null, 2))
+
       } catch (e) {
         this.$toast.warning("Insert a valid JSON")
         return
@@ -198,6 +208,16 @@ export default {
         this.$toast.error("Failed to delete pose " + pose)
         this.pending = false
       })
+    },
+    enableAllMotors: function () {
+      for (let [key] of Object.entries(this.robotConfig.motors)) {
+        this.robotConfig.motors[key].enabled = true
+      }
+    },
+    disableAllMotors: function () {
+      for (let [key] of Object.entries(this.robotConfig.motors)) {
+        this.robotConfig.motors[key].enabled = false
+      }
     },
     isJsonString: function (str) {
       try {
