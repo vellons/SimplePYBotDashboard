@@ -1,7 +1,7 @@
 <template>
   <div class="servomotor">
 
-    <div class="infos">
+    <div class="infos no-select">
       <button :disabled="pending || parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValue"
               @click="removeStep(stepValue)">-{{ stepValue }}
       </button>
@@ -20,7 +20,7 @@
       </button>
     </div>
 
-    <div class="inputs-row">
+    <div class="inputs-row no-select">
       <div class="input-limit" @click="goToMin">{{ config.angle_limit[0] }}</div>
       <div class="inputs-wrap">
         <label class="sr-only" for="goal"></label>
@@ -167,12 +167,14 @@ button {
 
 .info-title {
   font-weight: bold;
-  padding: 0 5px;
+  padding: 0 10px;
 }
 
 .info-angle {
   font-weight: bold;
   padding: 0 5px;
+  min-width: 35px;
+  display: inline-block;
 }
 
 .inputs-row {
@@ -267,5 +269,13 @@ input[type=range]:focus, input[type=range]:focus {
 .current-input::-moz-range-thumb {
   width: 2px;
   height: 16px;
+}
+
+.no-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently */
 }
 </style>
