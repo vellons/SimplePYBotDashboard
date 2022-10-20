@@ -87,8 +87,8 @@ export default {
         if (key === 's') newJoystick.y = -1
         if (key === 'd') newJoystick.x = 1
         if (key === 'w') newJoystick.y = 1
-        if (key === 'z') this.zValue = (this.zValue - 1) % 360
-        if (key === 'x') this.zValue = (this.zValue + 1) % 360
+        if (key === 'z') this.zValue = (this.zValue + 10) % 360
+        if (key === 'x') this.zValue = (this.zValue - 10) % 360
         if (this.zValue < 0) this.zValue = 360 + this.zValue
       })
       this.change(newJoystick)
@@ -134,7 +134,7 @@ export default {
       })
     },
     syncControllers: function () {
-      if (this.twistStatus?.angular?.z && this.keysDown.length === 0) {
+      if (this.twistStatus?.angular?.z !== undefined && this.keysDown.length === 0) {
         this.zValue = this.twistStatus?.angular?.z
       }
     }
