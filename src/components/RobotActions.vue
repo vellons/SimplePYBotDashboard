@@ -85,7 +85,7 @@ export default {
     selectedPose: "",
     poseSeconds: 0,
     pointToPointMotors: "",
-    pointToPointSeconds: 0,
+    pointToPointSeconds: 1,
     textAreaRows: 4,
     pending: false
   }),
