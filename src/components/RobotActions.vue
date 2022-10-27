@@ -83,7 +83,7 @@ export default {
   data: () => ({
     motionConfig: {},
     selectedPose: "",
-    poseSeconds: 0,
+    poseSeconds: 1,
     pointToPointMotors: "",
     pointToPointSeconds: 1,
     textAreaRows: 4,
