@@ -4,43 +4,64 @@
     <div v-if="motionConfig.poses" class="robot-actions-item robot-poses">
       <div class="robot-actions-item-title">Poses:</div>
       <label>
-        <select @change="changePtoPValues"  v-model="selectedPose" style="min-width: 200px">
-          <option disabled value="no_pose">Poses</option>
-          <option value="new_pose">--- New Pose ---</option>"
+        <select @change="changePtoPValues" v-model="selectedPose" style="min-width: 220px">
+          <option disabled value="__no_pose">Poses</option>
           <option v-for="(pose, name) in motionConfig.poses" :key="name" :value="name">{{ name }}</option>
+          <option value="__new_pose">--- new pose ---</option>
         </select>
       </label>
-      <label>
-        <input v-if="selectedPose === 'new_pose'" type="text" v-model="newPoseName" placeholder="New Pose Name" />
+
+      <label style="margin-top: 2px">
+        <input
+            v-if="selectedPose !== '' && selectedPose !== '__new_pose'"
+            v-model="poseSeconds" class="robot-actions-input" type="number" min="0"
+            max="30" placeholder="seconds"/>
       </label>
-      <button v-if="selectedPose !== 'new_pose' && selectedPose !== 'no_pose' && selectedPose !== ''" @click="deletePose(selectedPose)">Delete</button>
+      <button
+          v-if="selectedPose !== '' && selectedPose !== '__new_pose'"
+          @click="goToPose" :disabled="pending">
+        Go to {{ selectedPose }} in {{ poseSeconds }} seconds
+      </button>
+      <button
+          v-if="selectedPose !== '' && selectedPose !== '__new_pose'"
+          @click="deletePose(selectedPose)">Delete pose
+      </button>
     </div>
 
-    <div class="robot-actions-item">
+    <div class="robot-actions-item" v-if="selectedPose === '__new_pose'">
       <div class="robot-actions-item-title">Point to point:</div>
       <label>
         <div v-for="(motor, key) in robotConfig.motors" :key="key">
-          <span>{{(pointToPointMotors[key]) ? pointToPointMotors[key] : 0}}</span>
-          <!-- :checked="true" -->
-          <input type="checkbox" :id="key" v-model="motor.enabled"/>
+          <span class="ptp-value">{{ pointToPointMotors[key] !== undefined ? pointToPointMotors[key] : '-' }}</span>
+          <input type="checkbox" :id="key" v-model="enabledMotors[key]"/>
           <label :for="key">{{ key }}</label>
         </div>
-        <!-- Check all button -->
-        <button @click="enableAllMotors">Check all</button> <button @click="disableAllMotors">Uncheck all</button>
+        <button @click="enableAllMotors">Select all</button>
+        <button @click="disableAllMotors">Unselect all</button>
       </label>
+
       <div>
         <label>
-          <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
-            type="number" min="0" max="30" placeholder="seconds" />
+          <input
+              v-if="selectedPose === '__new_pose'" type="text" v-model="newPoseName"
+              placeholder="New pose name"/>
         </label>
-        <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" :disabled="pending">
-          Move point to point in {{ pointToPointSeconds }} seconds
-        </button>
         <button @click="copyCurrentPosition" :disabled="pending">
           Copy current position
         </button>
-        <button v-if="pointToPointMotors !== '' && selectedPose !== ''" @click="saveCurrentPosition" :disabled="pending">
+        <button v-if="pointToPointMotors !== '' && selectedPose !== ''" @click="saveCurrentPosition"
+                :disabled="pending || newPoseName === ''">
           Save current position
+        </button>
+
+        <br>
+
+        <label>
+          <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
+                 type="number" min="0" max="30" placeholder="seconds"/>
+        </label>
+        <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" :disabled="pending">
+          Move point to point in {{ pointToPointSeconds }} seconds
         </button>
       </div>
     </div>
@@ -88,14 +109,16 @@ export default {
   data: () => ({
     motionConfig: {},
     selectedPose: "",
+    newPoseName: "",
+    enabledMotors: {},
     poseSeconds: 1,
     pointToPointMotors: "",
     pointToPointSeconds: 1,
-    textAreaRows: 4,
     pending: false
   }),
   mounted() {
     this.getMotionInfo()
+    this.enableAllMotors()
   },
   methods: {
     getMotionInfo: function () {
@@ -129,7 +152,6 @@ export default {
     goToPose: function () {
       if (this.poseSeconds === "") this.poseSeconds = 0
       let pose = this.selectedPose
-      this.selectedPose = ""
       this.pending = true
       let data = {
         "seconds": parseFloat(this.poseSeconds)
@@ -138,6 +160,7 @@ export default {
         if (response.status !== 200) {
           this.$toast.error("Failed to go to pose " + pose + ". Bad response")
         }
+        this.selectedPose = ""
         this.pending = false
       }).catch(() => {
         this.$toast.error("Failed to go to pose " + pose)
@@ -165,16 +188,13 @@ export default {
       let status = toRaw(this.robotStatus)
       let motors = toRaw(this.robotConfig)["motors"]
       let result = {}
-      this.textAreaRows = 2
       for (let [key] of Object.entries(motors)) {
         if (status["motors"] && status["motors"].find(x => x.key === key).goal_angle) {
           result[key] = status["motors"].find(x => x.key === key).goal_angle
         } else {
           result[key] = 0
         }
-        this.textAreaRows++
       }
-      // this.pointToPointMotors = JSON.stringify(result, null, 2)
       this.pointToPointMotors = result
     },
     saveCurrentPosition: function () {
@@ -182,30 +202,34 @@ export default {
       try {
         //Select from point to point motors only the enabled motors
         for (let [key, value] of Object.entries(this.pointToPointMotors)) {
-          if (this.robotConfig.motors[key].enabled) {
+          if (this.enabledMotors[key]) {
             data[key] = value
           }
         }
-        data = JSON.parse(JSON.stringify(data, null, 2))
-
       } catch (e) {
         this.$toast.warning("Insert a valid JSON")
         return
       }
-      // Name from v-model newPoseName value
+
+      if (Object.entries(data).length === 0) {
+        this.$toast.warning("Insert at least 1 servo")
+        return
+      }
+
       let name = this.newPoseName
 
       if (name === "") {
         this.$toast.warning("Insert a valid name")
         return
       }
+      this.pending = true
       this.axios.post(this.webServerUrl + "/poses/" + name + "/", data).then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to save current position. Bad response")
         } else {
           this.$toast.success("Saved current position")
           this.selectedPose = name
-
+          this.newPoseName = ""
         }
         this.pending = false
         this.getMotionInfo()
@@ -215,19 +239,15 @@ export default {
       })
     },
     changePtoPValues: function () {
-      //Get motors values from selected position
-      if(this.selectedPose === "" || this.selectedPose === "new_pose") return
-      let pose = this.selectedPose
-      let motors = this.motionConfig.poses[pose]
-      this.pointToPointMotors = motors
-
-      //Set motors values to pointToPointMotors
-      for (let [key] of Object.entries(motors)) {
-        this.pointToPointMotors[key] = motors[key]
-      }
+      if (this.selectedPose === "" || this.selectedPose !== "__new_pose") return
+      this.copyCurrentPosition()
     },
     deletePose: function () {
       let pose = this.selectedPose
+      if (!confirm('Are you sure to delete the pose ' + pose + '?')) {
+        return
+      }
+      this.pending = true
       this.axios.delete(this.webServerUrl + "/poses/" + pose + "/").then((response) => {
         if (response.status !== 200) {
           this.$toast.error("Failed to delete pose " + pose + ". Bad response")
@@ -244,12 +264,12 @@ export default {
     },
     enableAllMotors: function () {
       for (let [key] of Object.entries(this.robotConfig.motors)) {
-        this.robotConfig.motors[key].enabled = true
+        this.enabledMotors[key] = true
       }
     },
     disableAllMotors: function () {
       for (let [key] of Object.entries(this.robotConfig.motors)) {
-        this.robotConfig.motors[key].enabled = false
+        this.enabledMotors[key] = false
       }
     },
     isJsonString: function (str) {
@@ -288,14 +308,19 @@ export default {
   margin: 0 2px;
 }
 
-.motors-text-area {
-  min-width: 250px;
-  min-height: 40px;
-  margin: 0 2px;
+.ptp-value {
+  padding: 0 5px;
+  min-width: 35px;
+  display: inline-block;
+  text-align: end;
+}
+
+input, select {
+  margin: 2px;
 }
 
 button {
   cursor: pointer;
-  margin: 0 2px;
+  margin: 2px;
 }
 </style>
