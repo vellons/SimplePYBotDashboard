@@ -59,7 +59,9 @@
           Close dashboard
         </button>
         <br/>
-        <label for="web-socket-url" class="server-label">Websocket url:</label>
+        <label for="web-socket-url" class="server-label" @click="webSocketLabelClick">
+          Websocket url:
+        </label>
         <input type="text" id="web-socket-url" v-model="webSocketUrl" class="server-input"
                placeholder="Insert your robot websocket address" :disabled="webSocket !== null"/>
         <button v-if="webSocket === null" @click="connectToWebSocket" :disabled="webSocketUrl === ''"
@@ -71,8 +73,12 @@
         </button>
       </div>
 
-      <div v-if="webSocket !== null">
+      <div v-if="!hideLastWebSocketStatus && webSocket !== null">
         {{ lastWebSocketStatus }}
+      </div>
+
+      <div v-if="hideLastWebSocketStatus && webSocket !== null && lastWebSocketStatus.system">
+        <li v-for="(data, key) in lastWebSocketStatus.system" :key="key"><b>{{ key }}</b>: {{ data }}</li>
       </div>
 
       <br>
@@ -115,7 +121,8 @@ export default {
     robotConfigAvailable: false,
     sdkVersion: null,
     lastWebSocketStatus: {},
-    appVersion: "0.6.0",
+    hideLastWebSocketStatus: true,
+    appVersion: "0.6.1",
     commitSha: "",
   }),
   mounted() {
@@ -147,7 +154,13 @@ export default {
           } else {
             this.$toast.warning("Bad robot configuration")
           }
+          this.$router.replace({query: {...this.$route.query, webserverurl: this.webServerUrl}})
           localStorage.setItem("webServerUrl", this.webServerUrl)
+          if (this.$route.query.autoconnect) {
+            setTimeout(() => {
+              this.connectToWebSocket()
+            }, 100)
+          }
         } else {
           this.$toast.error("Bad response from " + this.webServerUrl + "/configuration/" +
               " code " + response.status)
@@ -164,10 +177,11 @@ export default {
         this.$webSocket.close()
         this.webSocket = null
       }
-      localStorage.setItem("webSocketUrl", this.webSocketUrl)
       this.$webSocket.init(this.webSocketUrl + "/") // $webSocket defined in main.js
+      localStorage.setItem("webSocketUrl", this.webSocketUrl)
       this.webSocket = this.$webSocket.getInstance()
       console.log("Web socket initialized")
+      this.$router.replace({query: {...this.$route.query, websocketurl: this.webSocketUrl}})
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {
           let reader = new FileReader()
@@ -229,6 +243,10 @@ export default {
         this.webSocketUrl = localStorage.getItem("webSocketUrl")
       }
 
+      if (localStorage.getItem("hideLastWebSocketStatus")) {
+        this.hideLastWebSocketStatus = localStorage.getItem("hideLastWebSocketStatus") === 'true'
+      }
+
       if (this.$route.query.autoconnect) {
         this.connectToWebServer()
       }
@@ -237,6 +255,10 @@ export default {
       if (process.env.VUE_APP_COMMIT_SHA) {
         this.commitSha = process.env.VUE_APP_COMMIT_SHA
       }
+    },
+    webSocketLabelClick: function () {
+      this.hideLastWebSocketStatus = !this.hideLastWebSocketStatus
+      localStorage.setItem("hideLastWebSocketStatus", this.hideLastWebSocketStatus)
     }
   }
 }

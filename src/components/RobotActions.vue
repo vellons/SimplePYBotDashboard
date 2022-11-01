@@ -31,7 +31,7 @@
       <div>
         <label>
           <input v-if="pointToPointMotors !== ''" v-model="pointToPointSeconds" class="robot-actions-input"
-            type="number" min="0" max="120" placeholder="seconds" />
+            type="number" min="0" max="30" placeholder="seconds" />
         </label>
         <button v-if="pointToPointMotors !== ''" @click="movePointToPoint" :disabled="pending">
           Move point to point in {{ pointToPointSeconds }} seconds
@@ -43,6 +43,24 @@
           Save current position
         </button>
       </div>
+    </div>
+
+    <div class="robot-actions-item custom-buttons">
+      <button @click="sendCustom(1)" :disabled="pending">
+        Custom1
+      </button>
+      <button @click="sendCustom(2)" :disabled="pending">
+        Custom2
+      </button>
+      <button @click="sendCustom(3)" :disabled="pending">
+        Custom3
+      </button>
+      <button @click="sendCustom(4)" :disabled="pending">
+        Custom4
+      </button>
+      <button @click="sendCustom(5)" :disabled="pending">
+        Custom5
+      </button>
     </div>
 
   </div>
@@ -70,9 +88,9 @@ export default {
   data: () => ({
     motionConfig: {},
     selectedPose: "",
-    poseSeconds: 0,
+    poseSeconds: 1,
     pointToPointMotors: "",
-    pointToPointSeconds: 0,
+    pointToPointSeconds: 1,
     textAreaRows: 4,
     pending: false
   }),
@@ -91,6 +109,21 @@ export default {
           this.$toast.error("Bad response from " + this.webServerUrl + "/motion/. Code " + response.status)
         }
       }).catch(() => {
+      })
+    },
+    sendCustom: function (number) {
+      this.pending = true
+      let data = {
+        "command": "custom" + number.toString()
+      }
+      this.axios.post(this.webServerUrl + "/custom/", data).then((response) => {
+        if (response.status !== 200) {
+          this.$toast.error("Failed to send custom" + number.toString())
+        }
+        this.pending = false
+      }).catch(() => {
+        this.$toast.error("Failed to send custom" + number.toString())
+        this.pending = false
       })
     },
     goToPose: function () {
@@ -244,6 +277,10 @@ export default {
 .robot-poses {
   min-width: 120px;
   margin-bottom: 10px;
+}
+
+.custom-buttons {
+  margin-top: 10px;
 }
 
 .robot-actions-input {
