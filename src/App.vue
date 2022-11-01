@@ -77,6 +77,10 @@
         {{ lastWebSocketStatus }}
       </div>
 
+      <div v-if="hideLastWebSocketStatus && webSocket !== null && lastWebSocketStatus.system">
+        <li v-for="(data, key) in lastWebSocketStatus.system" :key="key"><b>{{ key }}</b>: {{ data }}</li>
+      </div>
+
       <br>
       <div class="version-label">
         Dashboard version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
@@ -153,7 +157,7 @@ export default {
           this.$router.replace({query: {...this.$route.query, webserverurl: this.webServerUrl}})
           localStorage.setItem("webServerUrl", this.webServerUrl)
           if (this.$route.query.autoconnect) {
-              setTimeout(() => {
+            setTimeout(() => {
               this.connectToWebSocket()
             }, 100)
           }

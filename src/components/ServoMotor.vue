@@ -8,7 +8,10 @@
       <button :disabled="pending || parseInt(config.angle_limit[0]) > parseInt(rangeGoalAngle) - stepValueSmall"
               @click="removeStep(stepValueSmall)">-{{ stepValueSmall }}
       </button>
-      <span class="info-title">{{ motorKey }}</span> | <span class="info-angle">{{ rangeGoalAngle }}</span>
+      <span class="info-title allow-select tooltip">
+        {{ config.display_key ? config.display_key : motorKey }}
+        <span v-if="config.label" class="tooltip-text">{{ config.label ? config.label : '' }}</span>
+      </span> | <span class="info-angle">{{ rangeGoalAngle }}</span>
       <button v-if="config.angle_limit[0] <= 0 && config.angle_limit[1] >= 0"
               :disabled="pending || parseInt(rangeGoalAngle) === 0" @click="goToZero">0
       </button>
@@ -168,12 +171,14 @@ button {
 .info-title {
   font-weight: bold;
   padding: 0 10px;
+  min-width: 150px;
+  display: inline-block;
 }
 
 .info-angle {
   font-weight: bold;
   padding: 0 5px;
-  min-width: 35px;
+  min-width: 40px;
   display: inline-block;
 }
 
@@ -277,5 +282,40 @@ input[type=range]:focus, input[type=range]:focus {
   -moz-user-select: none; /* Old versions of Firefox */
   -ms-user-select: none; /* Internet Explorer/Edge */
   user-select: none; /* Non-prefixed version, currently */
+}
+
+.allow-select {
+  -webkit-touch-callout: default; /* iOS Safari */
+  -webkit-user-select: text; /* Safari */
+  -moz-user-select: text; /* Old versions of Firefox */
+  -ms-user-select: text; /* Internet Explorer/Edge */
+  user-select: text; /* Non-prefixed version, currently */
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  background-color: #000000AA;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: absolute;
+  width: 140px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -70px;
+  z-index: 1;
+  transition: visibility 0.3s linear, opacity 0.3s linear;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
 </style>
