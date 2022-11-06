@@ -47,7 +47,7 @@
     <CollapsibleBlock
         id="configurations" class="home-collapse"
         :toggle-text="(!loadingRobotConfig && robotConfigAvailable) ? 'Configurations' : 'Dashboard for Simple Python Robot SDK'">
-      <div>
+      <div v-if="!onlyIPMode">
         <label for="web-server-url" class="server-label">Web server url:</label>
         <input type="text" id="web-server-url" v-model="webServerUrl" class="server-input"
                placeholder="Insert your robot web server address" :disabled="robotConfigAvailable"/>
@@ -57,6 +57,9 @@
         </button>
         <button v-else @click="closeDashboard" class="main-button">
           Close dashboard
+        </button>
+        <button v-if="!robotConfigAvailable && !onlyIPMode" @click="onlyIPMode = true" class="main-button">
+          Only IP
         </button>
         <br/>
         <label for="web-socket-url" class="server-label" @click="webSocketLabelClick">
@@ -70,6 +73,17 @@
         </button>
         <button v-else @click="closeWebSocket" class="main-button">
           Close websocket
+        </button>
+      </div>
+      <div v-else>
+        <label for="robot-ip" class="server-label">Robot IP:</label>
+        <input type="text" id="robot-ip" v-model="robotIP" class="server-input"
+               placeholder="Insert your robot IP or hostname" :disabled="robotConfigAvailable"/>
+        <button @click="connectFromIP" :disabled="robotIP === ''" class="main-button">
+          Connect to the robot
+        </button>
+        <button v-if="onlyIPMode" @click="onlyIPMode = false" class="main-button">
+          More params
         </button>
       </div>
 
@@ -115,6 +129,8 @@ export default {
   data: () => ({
     webServerUrl: "",
     webSocketUrl: "",
+    robotIP: "",
+    onlyIPMode: false,
     loadingRobotConfig: true,
     webSocket: null,
     robotConfig: {},
@@ -122,7 +138,7 @@ export default {
     sdkVersion: null,
     lastWebSocketStatus: {},
     hideLastWebSocketStatus: true,
-    appVersion: "0.7.0",
+    appVersion: "0.7.1",
     commitSha: "",
   }),
   mounted() {
@@ -149,18 +165,20 @@ export default {
             this.robotConfigAvailable = true
           }
           if (this.robotConfig.id && this.robotConfig.name) {
+            this.onlyIPMode = false
             this.loadingRobotConfig = false
+            document.title = this.robotConfig.name
             this.$toast.success(this.robotConfig.name + " ready")
           } else {
             this.$toast.warning("Bad robot configuration")
           }
           this.$router.replace({query: {...this.$route.query, webserverurl: this.webServerUrl}})
           localStorage.setItem("webServerUrl", this.webServerUrl)
-          if (this.$route.query.autoconnect) {
-            setTimeout(() => {
+          setTimeout(() => {
+            if (this.webSocket === null || this.webSocket.readyState !== WebSocket.OPEN) {
               this.connectToWebSocket()
-            }, 100)
-          }
+            }
+          }, 100)
         } else {
           this.$toast.error("Bad response from " + this.webServerUrl + "/configuration/" +
               " code " + response.status)
@@ -233,8 +251,12 @@ export default {
     readQueryConf: function () {
       if (this.$route.query.webserverurl) {
         this.webServerUrl = this.$route.query.webserverurl
+        this.onlyIPMode = false
       } else if (localStorage.getItem("webServerUrl")) {
         this.webServerUrl = localStorage.getItem("webServerUrl")
+        this.onlyIPMode = false
+      } else {
+        this.onlyIPMode = true
       }
 
       if (this.$route.query.websocketurl) {
@@ -259,6 +281,13 @@ export default {
     webSocketLabelClick: function () {
       this.hideLastWebSocketStatus = !this.hideLastWebSocketStatus
       localStorage.setItem("hideLastWebSocketStatus", this.hideLastWebSocketStatus)
+    },
+    connectFromIP: function () {
+      // Using standard Robot Simple PY bot ports
+      this.robotIP = this.robotIP.toString().replace(/\s/g, "")
+      this.webServerUrl = "http://" + this.robotIP + ":8000/api/v1/robot"
+      this.webSocketUrl = "ws://" + this.robotIP + ":65432"
+      this.connectToWebServer()
     }
   }
 }
