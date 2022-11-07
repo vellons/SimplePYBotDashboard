@@ -46,7 +46,7 @@ export default {
   flex: 0 50%;
 }
 
-@media only screen and (max-width: 700px) {
+@media only screen and (max-width: 900px) {
   .servomotor {
     flex: 0 100%;
   }
