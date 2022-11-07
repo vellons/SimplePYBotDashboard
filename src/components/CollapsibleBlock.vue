@@ -1,8 +1,8 @@
 <template>
   <div class="collapsible-block">
     <input :id="id" class="toggle" type="checkbox" :checked="checked">
-    <label v-if="type === 'lbl-toggle-text'" :for="id" class="lbl-toggle" :class="[type]"> {{ toggleText }} </label>
-    <label v-if="type === 'left-toggle'" :for="id" class="lbl-toggle" :class="[type]">
+    <label v-if="type === 'lbl-toggle-text'" :for="id" class="lbl-toggle" :class="[type, classes]"> {{ toggleText }} </label>
+    <label v-if="type === 'left-toggle'" :for="id" class="lbl-toggle" :class="[type, classes]">
       <slot name="header"/>
     </label>
     <div class="collapsible-content">
@@ -32,6 +32,10 @@ export default {
     toggleText: {
       type: String,
       default: "Toggle"
+    },
+    classes: {
+      type: Array,
+      default: () => []
     }
   }
 }
@@ -74,6 +78,10 @@ input[type='checkbox'] {
   color: #A77B0E;
 }
 
+.top-radius-zero {
+  border-radius: 0;
+}
+
 .lbl-toggle:hover {
   color: #7C5A0B;
 }
@@ -110,12 +118,12 @@ input[type='checkbox'] {
 
 .collapsible-content {
   max-height: 0;
-  overflow: scroll;
+  overflow: hidden;
   transition: max-height .25s ease-in-out;
 }
 
 .toggle:checked + .lbl-toggle + .collapsible-content {
-  max-height: 100vh;
+  max-height: 2000px;
 }
 
 .toggle:checked + .lbl-toggle {

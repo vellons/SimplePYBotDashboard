@@ -3,7 +3,7 @@
 
     <CollapsibleBlock
         v-if="!loadingRobotConfig && robotConfigAvailable"
-        id="motorsGroup" type="left-toggle" class="home-collapse">
+        id="motorsGroup" type="left-toggle" :classes="['top-radius-zero']" class="home-collapse">
       <template #header>
         <SdkManagement
             style="margin-left: 15px"
@@ -46,6 +46,7 @@
 
     <CollapsibleBlock
         id="configurations" class="home-collapse"
+        :classes="(!loadingRobotConfig && robotConfigAvailable) ? [] : ['top-radius-zero']"
         :toggle-text="(!loadingRobotConfig && robotConfigAvailable) ? 'Configurations' : 'Dashboard for Simple Python Robot SDK'">
       <div v-if="!onlyIPMode">
         <label for="web-server-url" class="server-label">Web server url:</label>
@@ -99,7 +100,6 @@
       <div class="version-label">
         Dashboard version: {{ appVersion }} <span v-if="commitSha" @click="setAllCommitSha">- {{ commitSha }}</span>
       </div>
-      <br>
       <div v-if="sdkVersion" class="version-label">
         SDK version: {{ sdkVersion }}
       </div>
@@ -317,5 +317,6 @@ export default {
 .version-label {
   font-size: 14px;
   font-style: italic;
+  margin-bottom: 3px;
 }
 </style>
