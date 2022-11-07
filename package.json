@@ -1,11 +1,15 @@
 {
   "name": "simplepybotdashboard",
+  "author": "vellons",
+  "description": "Basic development dashboard for SimplePYBotSDK",
   "version": "0.7.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "electron:dev": "vue-cli-service build && electron .",
+    "electron:build": "vue-cli-service build --mode production && electron-builder build"
   },
   "dependencies": {
     "@meforma/vue-toaster": "^1.2.2",
@@ -22,8 +26,22 @@
     "@vue/compiler-sfc": "^3.0.0",
     "@vue/reactivity": "^3.0.7",
     "babel-eslint": "^10.1.0",
+    "electron": "^21.2.2",
+    "electron-builder": "^23.6.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0-0"
+  },
+  "main": "src/electron_main.js",
+  "build": {
+    "appId": "0.7.1",
+    "win": {
+      "target": "nsis"
+    },
+    "files": ["**/*", "dist/**/*"],
+    "directories": {
+      "buildResources": "dist",
+      "output": "dist_release_electron"
+    }
   },
   "eslintConfig": {
     "root": true,
