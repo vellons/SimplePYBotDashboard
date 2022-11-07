@@ -1,5 +1,5 @@
 module.exports = {
-    publicPath: "/SimplePYBotDashboard/",
+    publicPath: "./",
     devServer: {
         proxy: {
             '^/api': {

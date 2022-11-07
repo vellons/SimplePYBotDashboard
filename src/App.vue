@@ -172,7 +172,7 @@ export default {
           } else {
             this.$toast.warning("Bad robot configuration")
           }
-          this.$router.replace({query: {...this.$route.query, webserverurl: this.webServerUrl}})
+          // this.$router.replace({query: {...this.$route.query, webserverurl: this.webServerUrl}})
           localStorage.setItem("webServerUrl", this.webServerUrl)
           setTimeout(() => {
             if (this.webSocket === null || this.webSocket.readyState !== WebSocket.OPEN) {
@@ -199,7 +199,7 @@ export default {
       localStorage.setItem("webSocketUrl", this.webSocketUrl)
       this.webSocket = this.$webSocket.getInstance()
       console.log("Web socket initialized")
-      this.$router.replace({query: {...this.$route.query, websocketurl: this.webSocketUrl}})
+      // this.$router.replace({query: {...this.$route.query, websocketurl: this.webSocketUrl}})
       this.webSocket.onmessage = (event) => {
         if (event.data instanceof Blob) {
           let reader = new FileReader()
